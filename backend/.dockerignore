@@ -1,0 +1,37 @@
+# Entorno virtual (NO debe ir en la imagen)
+venv/
+env/
+.venv
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Archivos de configuración local
+.env.local
+.env.*.local
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos de testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Git
+.git/
+.gitignore
+
+# Documentación
+README.md
+docs/
+
+# Logs
+*.log

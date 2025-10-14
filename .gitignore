@@ -1,0 +1,37 @@
+# Variables de entorno (NUNCA subir a Git)
+.env
+.env.local
+.env.*.local
+
+# Entornos virtuales Python
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Docker
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Base de datos local (si pruebas sin Docker)
+*.db
+*.sqlite
+
+# Archivos temporales
+tmp/
+temp/

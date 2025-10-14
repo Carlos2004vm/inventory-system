@@ -1,0 +1,27 @@
+# Framework web asíncrono
+fastapi==0.109.0
+
+# Servidor ASGI para correr FastAPI
+uvicorn[standard]==0.27.0
+
+# Conector MySQL para Python
+mysql-connector-python==8.3.0
+
+# Validación de datos y serialización
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Manejo de variables de entorno
+python-dotenv==1.0.0
+
+# JWT (JSON Web Tokens) para autenticación
+python-jose[cryptography]==3.3.0
+
+# Encriptación de contraseñas
+passlib[bcrypt]==1.7.4
+
+# Manejo de CORS (Cross-Origin Resource Sharing)
+python-multipart==0.0.6
+
+# Typing extensions para compatibilidad
+typing-extensions==4.9.0
