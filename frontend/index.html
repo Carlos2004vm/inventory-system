@@ -20,7 +20,7 @@
 
         .container {
             max-width: 1200px;
-            margin: 0 auto
+            margin: 0 auto;
         }
 
         .header {
@@ -51,6 +51,7 @@
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s;
+            margin: 5px;
         }
 
         .btn-primary {
@@ -62,6 +63,15 @@
             background: #5568d3;
         }
 
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
         .btn-danger {
             background: #e74c3c;
             color: white;
@@ -69,6 +79,29 @@
 
         .btn-danger:hover {
             background: #c0392b;
+        }
+
+        .btn-info {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #2980b9;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
         }
 
         .card {
@@ -84,6 +117,12 @@
             margin-bottom: 20px;
             border-bottom: 2px solid #667eea;
             padding-bottom: 10px;
+        }
+
+        .card h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
         }
 
         .form-group {
@@ -114,14 +153,14 @@
 
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 20px;
         }
 
         table th,
@@ -141,12 +180,8 @@
             background: #f5f5f5;
         }
 
-        .hidden {
-            display: none !important;
-        }
-
         .alert {
-            padding: 15px;
+            padding: 12px 20px;
             border-radius: 5px;
             margin-bottom: 15px;
         }
@@ -163,6 +198,22 @@
             border: 1px solid #f5c6cb;
         }
 
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         .tabs {
             display: flex;
             gap: 10px;
@@ -170,12 +221,18 @@
         }
 
         .tab {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background: white;
             border: none;
-            border-radius: 5px 5px 0 0;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
             transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #f0f0f0;
         }
 
         .tab.active {
@@ -191,10 +248,124 @@
             display: block;
         }
 
-        .loading {
-            text-align: center;
+        .sale-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sale-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sale-items-list {
+            margin-top: 10px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: white;
+        }
+
+        .stat-card p {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .modal-header h2 {
+            margin: 0;
             color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
         }
     </style>
 </head>
@@ -202,7 +373,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📦 Sistema de Inventario</h1>
+            <h1>📦 Sistema de Inventario y Ventas</h1>
             <div class="user-info hidden" id="userInfo">
                 <span id="username"></span>
                 <button class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
@@ -230,9 +401,9 @@
         <div id="mainApp" class="hidden">
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" onclick="showTab('products')">Productos</button>
-                <button class="tab" onclick="showTab('sales')">Ventas</button>
-                <button class="tab" onclick="showTab('stats')">Estadísticas</button>
+                <button class="tab active" onclick="showTab('products')">📦 Productos</button>
+                <button class="tab" onclick="showTab('sales')">💰 Ventas</button>
+                <button class="tab" onclick="showTab('stats')">📊 Estadísticas</button>
             </div>
 
             <!-- Products Tab -->
@@ -293,28 +464,79 @@
 
             <!-- Sales Tab -->
             <div id="salesTab" class="tab-content">
+                <!-- Create Sale -->
                 <div class="card">
-                    <h2>💰 Crear Venta</h2>
+                    <h2>💰 Crear Nueva Venta</h2>
                     <div id="saleAlert"></div>
-                    <p>Funcionalidad de ventas - Por implementar</p>
+                    
+                    <h3>Agregar Productos</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Producto</label>
+                            <select id="saleProductSelect">
+                                <option value="">Seleccione un producto...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad</label>
+                            <input type="number" id="saleQuantity" min="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-success" onclick="addSaleItem()">➕ Agregar</button>
+                        </div>
+                    </div>
+
+                    <div id="saleItemsList"></div>
+
+                    <div class="form-group">
+                        <label>Notas (Opcional)</label>
+                        <textarea id="saleNotes" placeholder="Agregar comentarios sobre la venta..."></textarea>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="createSale()">✅ Completar Venta</button>
+                    <button type="button" class="btn btn-warning" onclick="clearSaleForm()">🗑️ Limpiar</button>
+                </div>
+
+                <!-- List Sales -->
+                <div class="card">
+                    <h2>📋 Historial de Ventas</h2>
+                    <button class="btn btn-primary" onclick="loadSales()">🔄 Recargar</button>
+                    <div id="salesTable" class="loading">Cargando ventas...</div>
                 </div>
             </div>
 
             <!-- Stats Tab -->
             <div id="statsTab" class="tab-content">
                 <div class="card">
-                    <h2>📊 Estadísticas</h2>
+                    <h2>📊 Estadísticas Generales</h2>
                     <div id="statsContent" class="loading">Cargando estadísticas...</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal for Sale Details -->
+    <div id="saleDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📄 Detalles de la Venta</h2>
+                <button class="close-btn" onclick="closeSaleDetailsModal()">&times;</button>
+            </div>
+            <div id="saleDetailsContent"></div>
+        </div>
+    </div>
+
     <script>
         const API_URL = 'http://localhost:8000';
         let token = null;
+        let currentSaleItems = [];
+        let availableProducts = [];
 
-        // Login
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+
         async function login(event) {
             event.preventDefault();
             const username = document.getElementById('loginUsername').value;
@@ -348,16 +570,20 @@
             }
         }
 
-        // Logout
         function logout() {
             token = null;
+            currentSaleItems = [];
+            availableProducts = [];
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('userInfo').classList.add('hidden');
             document.getElementById('loginPassword').value = '';
         }
 
-        // Create Product
+        // ============================================
+        // PRODUCTS
+        // ============================================
+
         async function createProduct(event) {
             event.preventDefault();
 
@@ -396,7 +622,6 @@
             }
         }
 
-        // Load Products
         async function loadProducts() {
             const container = document.getElementById('productsTable');
             container.innerHTML = '<div class="loading">Cargando productos...</div>';
@@ -409,15 +634,21 @@
                 const products = await response.json();
 
                 if (response.ok) {
-                    let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>SKU</th><th>Precio</th><th>Stock</th><th>Categoría</th></tr></thead><tbody>';
+                    availableProducts = products;
+                    updateSaleProductSelect();
+
+                    let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>SKU</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead><tbody>';
                     products.forEach(p => {
+                        const stockBadge = p.stock <= p.min_stock ? 
+                            '<span class="badge badge-danger">Stock Bajo</span>' : 
+                            '<span class="badge badge-success">Stock OK</span>';
                         html += `<tr>
                             <td>${p.id}</td>
                             <td>${p.name}</td>
                             <td>${p.sku || 'N/A'}</td>
-                            <td>$${p.price}</td>
-                            <td>${p.stock}</td>
-                            <td>${p.category_id || 'N/A'}</td>
+                            <td>$${parseFloat(p.price).toFixed(2)}</td>
+                            <td>${p.stock} ${stockBadge}</td>
+                            <td>${p.is_active ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>'}</td>
                         </tr>`;
                     });
                     html += '</tbody></table>';
@@ -430,7 +661,271 @@
             }
         }
 
-        // Load Stats
+        // ============================================
+        // SALES
+        // ============================================
+
+        function updateSaleProductSelect() {
+            const select = document.getElementById('saleProductSelect');
+            select.innerHTML = '<option value="">Seleccione un producto...</option>';
+            
+            availableProducts
+                .filter(p => p.is_active && p.stock > 0)
+                .forEach(p => {
+                    select.innerHTML += `<option value="${p.id}" data-price="${p.price}" data-stock="${p.stock}">${p.name} - Stock: ${p.stock} - $${parseFloat(p.price).toFixed(2)}</option>`;
+                });
+        }
+
+        function addSaleItem() {
+            const select = document.getElementById('saleProductSelect');
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+
+            if (!select.value) {
+                showAlert('saleAlert', 'Seleccione un producto', 'warning');
+                return;
+            }
+
+            if (quantity <= 0) {
+                showAlert('saleAlert', 'La cantidad debe ser mayor a 0', 'warning');
+                return;
+            }
+
+            const productId = parseInt(select.value);
+            const selectedOption = select.options[select.selectedIndex];
+            const productName = selectedOption.text.split(' - ')[0];
+            const price = parseFloat(selectedOption.dataset.price);
+            const availableStock = parseInt(selectedOption.dataset.stock);
+
+            // Verificar stock disponible
+            if (quantity > availableStock) {
+                showAlert('saleAlert', `Stock insuficiente. Disponible: ${availableStock}`, 'error');
+                return;
+            }
+
+            // Verificar si el producto ya está en la lista
+            const existingItem = currentSaleItems.find(item => item.product_id === productId);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+                existingItem.subtotal = existingItem.quantity * existingItem.unit_price;
+            } else {
+                currentSaleItems.push({
+                    product_id: productId,
+                    product_name: productName,
+                    quantity: quantity,
+                    unit_price: price,
+                    subtotal: quantity * price
+                });
+            }
+
+            renderSaleItems();
+            select.value = '';
+            document.getElementById('saleQuantity').value = 1;
+            showAlert('saleAlert', 'Producto agregado', 'success');
+        }
+
+        function removeSaleItem(index) {
+            currentSaleItems.splice(index, 1);
+            renderSaleItems();
+        }
+
+        function renderSaleItems() {
+            const container = document.getElementById('saleItemsList');
+            
+            if (currentSaleItems.length === 0) {
+                container.innerHTML = '<p style="color: #999; padding: 15px;">No hay productos agregados</p>';
+                return;
+            }
+
+            let total = 0;
+            let html = '<h3>Productos en la Venta</h3>';
+            
+            currentSaleItems.forEach((item, index) => {
+                total += item.subtotal;
+                html += `
+                    <div class="sale-item">
+                        <div class="sale-item-header">
+                            <div>
+                                <strong>${item.product_name}</strong><br>
+                                <small>Cantidad: ${item.quantity} x $${item.unit_price.toFixed(2)} = $${item.subtotal.toFixed(2)}</small>
+                            </div>
+                            <button class="btn btn-danger btn-small" onclick="removeSaleItem(${index})">❌</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `<div style="text-align: right; margin-top: 15px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
+                <h3>Total: $${total.toFixed(2)}</h3>
+            </div>`;
+
+            container.innerHTML = html;
+        }
+
+        async function createSale() {
+            if (currentSaleItems.length === 0) {
+                showAlert('saleAlert', 'Debe agregar al menos un producto', 'warning');
+                return;
+            }
+
+            const saleData = {
+                items: currentSaleItems.map(item => ({
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price
+                })),
+                notes: document.getElementById('saleNotes').value || null
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/sales`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(saleData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('saleAlert', `✅ Venta #${data.id} creada exitosamente por $${parseFloat(data.total_amount).toFixed(2)}`, 'success');
+                    clearSaleForm();
+                    loadProducts(); // Actualizar stock
+                    loadSales();
+                    loadStats();
+                } else {
+                    showAlert('saleAlert', data.detail || 'Error al crear venta', 'error');
+                }
+            } catch (error) {
+                showAlert('saleAlert', 'Error de conexión', 'error');
+            }
+        }
+
+        function clearSaleForm() {
+            currentSaleItems = [];
+            renderSaleItems();
+            document.getElementById('saleNotes').value = '';
+            document.getElementById('saleProductSelect').value = '';
+            document.getElementById('saleQuantity').value = 1;
+        }
+
+        async function loadSales() {
+            const container = document.getElementById('salesTable');
+            container.innerHTML = '<div class="loading">Cargando ventas...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/sales`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const sales = await response.json();
+
+                if (response.ok) {
+                    if (sales.length === 0) {
+                        container.innerHTML = '<p>No hay ventas registradas</p>';
+                        return;
+                    }
+
+                    let html = '<table><thead><tr><th>ID</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>';
+                    sales.forEach(s => {
+                        const date = new Date(s.sale_date).toLocaleString('es-CO');
+                        const statusBadge = s.status === 'completed' ? 
+                            '<span class="badge badge-success">Completada</span>' : 
+                            '<span class="badge badge-danger">Cancelada</span>';
+                        
+                        html += `<tr>
+                            <td>${s.id}</td>
+                            <td>${date}</td>
+                            <td>$${parseFloat(s.total_amount).toFixed(2)}</td>
+                            <td>${statusBadge}</td>
+                            <td>${s.notes || '-'}</td>
+                            <td>
+                                <button class="btn btn-info btn-small" onclick="viewSaleDetails(${s.id})">👁️ Ver</button>
+                                ${s.status === 'completed' ? `<button class="btn btn-danger btn-small" onclick="cancelSale(${s.id})">❌ Cancelar</button>` : ''}
+                            </td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p>Error al cargar ventas</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p>Error de conexión</p>';
+            }
+        }
+
+        async function viewSaleDetails(saleId) {
+            try {
+                const response = await fetch(`${API_URL}/api/sales/${saleId}/items`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const items = await response.json();
+
+                if (response.ok) {
+                    let html = '<table><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead><tbody>';
+                    let total = 0;
+                    items.forEach(item => {
+                        total += parseFloat(item.subtotal);
+                        html += `<tr>
+                            <td>${item.product_name}</td>
+                            <td>${item.quantity}</td>
+                            <td>$${parseFloat(item.unit_price).toFixed(2)}</td>
+                            <td>$${parseFloat(item.subtotal).toFixed(2)}</td>
+                        </tr>`;
+                    });
+                    html += `<tr style="font-weight: bold; background: #f0f0f0;">
+                        <td colspan="3" style="text-align: right;">TOTAL:</td>
+                        <td>$${total.toFixed(2)}</td>
+                    </tr>`;
+                    html += '</tbody></table>';
+                    
+                    document.getElementById('saleDetailsContent').innerHTML = html;
+                    document.getElementById('saleDetailsModal').classList.add('active');
+                } else {
+                    alert('Error al cargar detalles de la venta');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+
+        function closeSaleDetailsModal() {
+            document.getElementById('saleDetailsModal').classList.remove('active');
+        }
+
+        async function cancelSale(saleId) {
+            if (!confirm(`¿Está seguro de cancelar la venta #${saleId}? El stock será restaurado.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/sales/${saleId}/cancel`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    loadSales();
+                    loadProducts();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (data.detail || 'Error al cancelar venta'));
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+
+        // ============================================
+        // STATISTICS
+        // ============================================
+
         async function loadStats() {
             const container = document.getElementById('statsContent');
 
@@ -442,12 +937,45 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    container.innerHTML = `
-                        <h3>Resumen de Ventas</h3>
-                        <p><strong>Total de Ventas:</strong> ${data.summary.total_sales || 0}</p>
-                        <p><strong>Monto Total:</strong> $${data.summary.total_amount || 0}</p>
-                        <p><strong>Promedio por Venta:</strong> $${data.summary.avg_sale_amount || 0}</p>
+                    const stats = data.summary;
+                    const topProducts = data.top_products;
+
+                    let html = '<div class="stats-grid">';
+                    
+                    html += `
+                        <div class="stat-card">
+                            <h3>💰 Total Ventas</h3>
+                            <p>${stats.total_sales || 0}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>💵 Monto Total</h3>
+                            <p>$${parseFloat(stats.total_amount || 0).toFixed(2)}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>📊 Promedio por Venta</h3>
+                            <p>$${parseFloat(stats.avg_sale_amount || 0).toFixed(2)}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>🔝 Venta Máxima</h3>
+                            <p>$${parseFloat(stats.max_sale || 0).toFixed(2)}</p>
+                        </div>
                     `;
+                    
+                    html += '</div>';
+
+                    if (topProducts && topProducts.length > 0) {
+                        html += '<h3 style="margin-top: 30px;">🏆 Top 5 Productos Más Vendidos</h3>';
+                        html += '<table><thead><tr><th>Producto</th><th>Cantidad Vendida</th></tr></thead><tbody>';
+                        topProducts.forEach(p => {
+                            html += `<tr>
+                                <td>${p.name}</td>
+                                <td><strong>${p.total_quantity}</strong> unidades</td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table>';
+                    }
+
+                    container.innerHTML = html;
                 } else {
                     container.innerHTML = '<p>No hay estadísticas disponibles</p>';
                 }
@@ -456,14 +984,16 @@
             }
         }
 
-        // Show Alert
+        // ============================================
+        // UTILITIES
+        // ============================================
+
         function showAlert(elementId, message, type) {
             const alertDiv = document.getElementById(elementId);
             alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => { alertDiv.innerHTML = ''; }, 3000);
+            setTimeout(() => { alertDiv.innerHTML = ''; }, 5000);
         }
 
-        // Show Tab
         function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -471,7 +1001,22 @@
             event.target.classList.add('active');
             document.getElementById(`${tabName}Tab`).classList.add('active');
 
-            if (tabName === 'stats') loadStats();
+            if (tabName === 'sales') {
+                loadSales();
+                renderSaleItems();
+            } else if (tabName === 'stats') {
+                loadStats();
+            } else if (tabName === 'products') {
+                loadProducts();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('saleDetailsModal');
+            if (event.target === modal) {
+                closeSaleDetailsModal();
+            }
         }
     </script>
 </body>
