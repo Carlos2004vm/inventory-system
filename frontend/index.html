@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario y Ventas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: white;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📦 Sistema de Inventario</h1>
+            <div class="user-info hidden" id="userInfo">
+                <span id="username"></span>
+                <button class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="card" id="loginSection">
+            <h2>🔐 Iniciar Sesión</h2>
+            <div id="loginAlert"></div>
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="loginUsername" required value="admin">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="loginPassword" required value="admin123">
+                </div>
+                <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+            </form>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="hidden">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('products')">Productos</button>
+                <button class="tab" onclick="showTab('sales')">Ventas</button>
+                <button class="tab" onclick="showTab('stats')">Estadísticas</button>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="productsTab" class="tab-content active">
+                <!-- Create Product -->
+                <div class="card">
+                    <h2>➕ Crear Producto</h2>
+                    <div id="productAlert"></div>
+                    <form onsubmit="createProduct(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nombre *</label>
+                                <input type="text" id="productName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>SKU</label>
+                                <input type="text" id="productSku">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Precio *</label>
+                                <input type="number" step="0.01" id="productPrice" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Stock *</label>
+                                <input type="number" id="productStock" required value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Stock Mínimo</label>
+                                <input type="number" id="productMinStock" value="5">
+                            </div>
+                            <div class="form-group">
+                                <label>Categoría</label>
+                                <select id="productCategory">
+                                    <option value="1">Electrónica</option>
+                                    <option value="2">Alimentos</option>
+                                    <option value="3">Ropa</option>
+                                    <option value="4">Hogar</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea id="productDescription"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Crear Producto</button>
+                    </form>
+                </div>
+
+                <!-- List Products -->
+                <div class="card">
+                    <h2>📋 Lista de Productos</h2>
+                    <button class="btn btn-primary" onclick="loadProducts()">🔄 Recargar</button>
+                    <div id="productsTable" class="loading">Cargando productos...</div>
+                </div>
+            </div>
+
+            <!-- Sales Tab -->
+            <div id="salesTab" class="tab-content">
+                <div class="card">
+                    <h2>💰 Crear Venta</h2>
+                    <div id="saleAlert"></div>
+                    <p>Funcionalidad de ventas - Por implementar</p>
+                </div>
+            </div>
+
+            <!-- Stats Tab -->
+            <div id="statsTab" class="tab-content">
+                <div class="card">
+                    <h2>📊 Estadísticas</h2>
+                    <div id="statsContent" class="loading">Cargando estadísticas...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let token = null;
+
+        // Login
+        async function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    token = data.access_token;
+                    showAlert('loginAlert', 'Login exitoso', 'success');
+                    setTimeout(() => {
+                        document.getElementById('loginSection').classList.add('hidden');
+                        document.getElementById('mainApp').classList.remove('hidden');
+                        document.getElementById('userInfo').classList.remove('hidden');
+                        document.getElementById('username').textContent = `👤 ${username}`;
+                        loadProducts();
+                        loadStats();
+                    }, 500);
+                } else {
+                    showAlert('loginAlert', data.detail || 'Error al iniciar sesión', 'error');
+                }
+            } catch (error) {
+                showAlert('loginAlert', 'Error de conexión con el servidor', 'error');
+            }
+        }
+
+        // Logout
+        function logout() {
+            token = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('loginPassword').value = '';
+        }
+
+        // Create Product
+        async function createProduct(event) {
+            event.preventDefault();
+
+            const product = {
+                name: document.getElementById('productName').value,
+                description: document.getElementById('productDescription').value,
+                sku: document.getElementById('productSku').value || null,
+                price: parseFloat(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                min_stock: parseInt(document.getElementById('productMinStock').value),
+                category_id: parseInt(document.getElementById('productCategory').value),
+                is_active: true
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(product)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('productAlert', `Producto "${data.name}" creado exitosamente`, 'success');
+                    event.target.reset();
+                    loadProducts();
+                } else {
+                    showAlert('productAlert', data.detail || 'Error al crear producto', 'error');
+                }
+            } catch (error) {
+                showAlert('productAlert', 'Error de conexión', 'error');
+            }
+        }
+
+        // Load Products
+        async function loadProducts() {
+            const container = document.getElementById('productsTable');
+            container.innerHTML = '<div class="loading">Cargando productos...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/products`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const products = await response.json();
+
+                if (response.ok) {
+                    let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>SKU</th><th>Precio</th><th>Stock</th><th>Categoría</th></tr></thead><tbody>';
+                    products.forEach(p => {
+                        html += `<tr>
+                            <td>${p.id}</td>
+                            <td>${p.name}</td>
+                            <td>${p.sku || 'N/A'}</td>
+                            <td>$${p.price}</td>
+                            <td>${p.stock}</td>
+                            <td>${p.category_id || 'N/A'}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p>Error al cargar productos</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p>Error de conexión</p>';
+            }
+        }
+
+        // Load Stats
+        async function loadStats() {
+            const container = document.getElementById('statsContent');
+
+            try {
+                const response = await fetch(`${API_URL}/api/sales/stats/summary`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    container.innerHTML = `
+                        <h3>Resumen de Ventas</h3>
+                        <p><strong>Total de Ventas:</strong> ${data.summary.total_sales || 0}</p>
+                        <p><strong>Monto Total:</strong> $${data.summary.total_amount || 0}</p>
+                        <p><strong>Promedio por Venta:</strong> $${data.summary.avg_sale_amount || 0}</p>
+                    `;
+                } else {
+                    container.innerHTML = '<p>No hay estadísticas disponibles</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p>Error al cargar estadísticas</p>';
+            }
+        }
+
+        // Show Alert
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => { alertDiv.innerHTML = ''; }, 3000);
+        }
+
+        // Show Tab
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+
+            if (tabName === 'stats') loadStats();
+        }
+    </script>
+</body>
+</html>
