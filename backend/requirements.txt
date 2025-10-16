@@ -28,3 +28,14 @@ python-multipart==0.0.6
 typing-extensions==4.9.0
 
 pydantic[email]
+
+# ============================================
+# NUEVAS DEPENDENCIAS PARA EXCEL
+# ============================================
+
+# Procesamiento de archivos Excel
+openpyxl==3.1.2
+pandas==2.1.4
+
+# WebSocket para progreso en tiempo real
+websockets==12.0
