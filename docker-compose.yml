@@ -3,28 +3,24 @@ version: '3.8'
 services:
   # Servicio de Base de Datos MySQL
   mysql:
-    image: mysql:8.0  # Imagen oficial de MySQL versión 8.0
+    image: mysql:8.0
     container_name: inventory_mysql
-    restart: always  # Reinicia automáticamente si falla
+    restart: always
     env_file:
-      - .env  # Carga variables desde archivo .env
+      - .env
     environment:
-      # Variables específicas de MySQL
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "${DB_PORT}:3306"  # Mapea puerto local al contenedor
+      - "${DB_PORT}:3306"
     volumes:
-      # Persiste los datos de MySQL en tu máquina
       - mysql_data:/var/lib/mysql
-      # Ejecuta el script de inicialización al crear la BD
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - inventory_network
     healthcheck:
-      # Verifica que MySQL esté listo antes de continuar
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 10s
       timeout: 5s
@@ -33,15 +29,14 @@ services:
   # Servicio Backend con FastAPI
   backend:
     build:
-      context: ./backend  # Construye desde la carpeta backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: inventory_backend
     restart: always
     env_file:
       - .env
     environment:
-      # Variables para conectar con MySQL
-      DB_HOST: mysql  # Nombre del servicio MySQL
+      DB_HOST: mysql
       DB_PORT: 3306
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -49,24 +44,34 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_ALGORITHM: ${JWT_ALGORITHM}
     ports:
-      - "8000:8000"  # FastAPI corre en puerto 8000
+      - "8000:8000"
     volumes:
-      # Permite editar código sin reconstruir la imagen
       - ./backend:/app
     depends_on:
       mysql:
-        condition: service_healthy  # Espera a que MySQL esté listo
+        condition: service_healthy
     networks:
       - inventory_network
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    # --reload: recarga automática al cambiar código
 
-# Volumen persistente para MySQL
+  # Servicio Frontend con Nginx
+  frontend:
+    image: nginx:alpine
+    container_name: inventory_frontend
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    networks:
+      - inventory_network
+    depends_on:
+      - backend
+
 volumes:
-  mysql_data:
+  mysql_data: 
     driver: local
 
-# Red privada para que los servicios se comuniquen
 networks:
   inventory_network:
     driver: bridge

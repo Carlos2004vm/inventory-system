@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
 import logging
 import os
 
@@ -44,6 +45,47 @@ app = FastAPI(
         "email": "soporte@inventario.com"
     }
 )
+
+
+# ============================================
+# CONFIGURACIÓN DE OPENAPI PARA SWAGGER
+# ============================================
+
+def custom_openapi():
+    """
+    Personaliza el schema OpenAPI para configurar correctamente
+    la autenticación Bearer en Swagger UI.
+    
+    Retorna:
+        dict: Schema OpenAPI personalizado
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Configurar el esquema de seguridad Bearer correctamente
+    openapi_schema["components"]["securitySchemes"] = {
+        "HTTPBearer": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Ingresa: Bearer <tu_token>"
+        }
+    }
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
+logger.info("OpenAPI schema configurado para Swagger")
+
 
 # ============================================
 # CONFIGURACIÓN DE CORS

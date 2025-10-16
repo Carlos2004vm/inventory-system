@@ -164,7 +164,7 @@ def test_connection():
     """
     Prueba la conexión a la base de datos.
     
-    Parámetros de entrada:
+    Parámetros de entrada: 
         Ninguno
     
     Retorna:
