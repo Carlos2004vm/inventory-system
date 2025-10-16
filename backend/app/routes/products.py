@@ -59,7 +59,7 @@ async def get_products(
             query += " AND is_active = %s"
             params.append(is_active)
         
-        query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
+        query += " ORDER BY id ASC LIMIT %s OFFSET %s"
         params.extend([limit, skip])
         
         products = execute_query(query, tuple(params), fetch=True)
@@ -176,11 +176,19 @@ async def create_product(
                 detail="Error al crear producto"
             )
         
+# Obtener el ID insertado y el producto
         get_product_query = """
             SELECT * FROM products 
-            WHERE id = (SELECT LAST_INSERT_ID())
+            ORDER BY id DESC LIMIT 1
         """
         created_product = execute_query(get_product_query, fetch=True)
+        
+        if not created_product or len(created_product) == 0:
+            logger.error("No se pudo recuperar el producto después de crearlo")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Producto creado pero no se pudo recuperar"
+            )
         
         logger.info(f"✓ Producto creado exitosamente: ID {created_product[0]['id']}")
         return created_product[0]
@@ -678,4 +686,52 @@ async def download_excel_template(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error al generar plantilla"
+        )
+        
+
+# ============================================
+# ENDPOINT: REINICIAR SECUENCIA DE IDs
+# ============================================
+
+@router.post(
+    "/reset-sequence",
+    response_model=MessageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Reiniciar secuencia de IDs",
+    description="Reinicia el AUTO_INCREMENT de productos a 1 (solo si no hay productos)"
+)
+async def reset_product_sequence(
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Reinicia la secuencia de IDs de productos."""
+    try:
+        # Verificar que no haya productos
+        check_query = "SELECT COUNT(*) as total FROM products"
+        result = execute_query(check_query, fetch=True)
+        
+        if result[0]['total'] > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se puede reiniciar la secuencia mientras existan productos"
+            )
+        
+        # Reiniciar AUTO_INCREMENT
+        reset_query = "ALTER TABLE products AUTO_INCREMENT = 1"
+        execute_query(reset_query, fetch=False)
+        
+        logger.info(f"✓ Secuencia de productos reiniciada por {current_user['username']}")
+        
+        return {
+            "message": "Secuencia reiniciada exitosamente",
+            "detail": "El próximo producto creado tendrá ID = 1"
+        }
+        
+    except HTTPException:
+        raise
+    
+    except Exception as e:
+        logger.error(f"Error al reiniciar secuencia: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al reiniciar secuencia"
         )
