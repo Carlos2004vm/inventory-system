@@ -620,6 +620,10 @@
                         <button type="submit" class="btn btn-success">Agregar Producto</button>
                     </form>
 
+                    <button class="btn btn-warning" onclick="resetProductSequence()" style="margin-top: 10px;">
+                        🔄 Reiniciar Numeración de IDs
+                    </button>
+
                     <h3>Lista de Productos</h3>
                     <div id="productsLoading" class="loading hidden">Cargando productos...</div>
                     <table id="productsTable">
@@ -1407,6 +1411,31 @@
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             loadProducts();
+        }
+
+        async function resetProductSequence() {
+            if (!confirm('⚠️ Esto reiniciará la numeración de IDs a 1.\n\nSOLO funciona si NO hay productos.\n\n¿Continuar?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/products/reset-sequence`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('productAlert', '✅ ' + data.message, 'success');
+                } else {
+                    showAlert('productAlert', '⚠️ ' + data.detail, 'warning');
+                }
+            } catch (error) {
+                showAlert('productAlert', 'Error de conexión', 'error');
+            }
         }
     </script>
 </body>
