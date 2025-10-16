@@ -367,52 +367,228 @@
         .close-btn:hover {
             color: #333;
         }
+
+        .upload-container {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9ff;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+
+        .upload-container:hover {
+            border-color: #5568d3;
+            background: #f0f2ff;
+        }
+
+        .upload-container.drag-over {
+            border-color: #27ae60;
+            background: #e8f5e9;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            height: 30px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            color: #333;
+            z-index: 1;
+        }
+
+        .file-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .result-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .result-card {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result-card.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .result-card.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+
+        .result-card.warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+        .result-card h4 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+        }
+
+        .result-card p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .error-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            text-align: left;
+            margin-top: 15px;
+        }
+
+        .error-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .download-template {
+            display: inline-block;
+            margin: 10px 0;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .download-template:hover {
+            text-decoration: underline;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>📦 Sistema de Inventario y Ventas</h1>
-            <div class="user-info hidden" id="userInfo">
-                <span id="username"></span>
-                <button class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+    <div id="loginPage">
+        <div class="container">
+            <div class="card" style="max-width: 400px; margin: 100px auto;">
+                <h2>🔐 Iniciar Sesión</h2>
+                <div id="loginAlert"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Usuario:</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar</button>
+                </form>
             </div>
         </div>
+    </div>
 
-        <!-- Login Form -->
-        <div class="card" id="loginSection">
-            <h2>🔐 Iniciar Sesión</h2>
-            <div id="loginAlert"></div>
-            <form onsubmit="login(event)">
-                <div class="form-group">
-                    <label>Usuario</label>
-                    <input type="text" id="loginUsername" required value="admin">
+    <div id="mainApp" class="hidden">
+        <div class="container">
+            <div class="header">
+                <h1>📦 Sistema de Inventario</h1>
+                <div class="user-info">
+                    <span>👤 <strong id="currentUser"></strong></span>
+                    <button class="btn btn-danger btn-small" onclick="logout()">Cerrar Sesión</button>
                 </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="loginPassword" required value="admin123">
-                </div>
-                <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-            </form>
-        </div>
+            </div>
 
-        <!-- Main App -->
-        <div id="mainApp" class="hidden">
-            <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="showTab('products')">📦 Productos</button>
                 <button class="tab" onclick="showTab('sales')">💰 Ventas</button>
                 <button class="tab" onclick="showTab('stats')">📊 Estadísticas</button>
+                <button class="tab" onclick="showTab('excel')">📤 Carga Masiva</button>
             </div>
 
-            <!-- Products Tab -->
             <div id="productsTab" class="tab-content active">
-                <!-- Create Product -->
                 <div class="card">
-                    <h2>➕ Crear Producto</h2>
+                    <h2>📦 Gestión de Productos</h2>
                     <div id="productAlert"></div>
-                    <form onsubmit="createProduct(event)">
+                    
+                    <h3>Agregar Nuevo Producto</h3>
+                    <form id="productForm">
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Nombre *</label>
@@ -426,119 +602,258 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Precio *</label>
-                                <input type="number" step="0.01" id="productPrice" required>
+                                <input type="number" id="productPrice" step="0.01" required>
                             </div>
                             <div class="form-group">
                                 <label>Stock *</label>
-                                <input type="number" id="productStock" required value="0">
+                                <input type="number" id="productStock" required>
                             </div>
                             <div class="form-group">
                                 <label>Stock Mínimo</label>
                                 <input type="number" id="productMinStock" value="5">
-                            </div>
-                            <div class="form-group">
-                                <label>Categoría</label>
-                                <select id="productCategory">
-                                    <option value="1">Electrónica</option>
-                                    <option value="2">Alimentos</option>
-                                    <option value="3">Ropa</option>
-                                    <option value="4">Hogar</option>
-                                </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Descripción</label>
                             <textarea id="productDescription"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Crear Producto</button>
+                        <button type="submit" class="btn btn-success">Agregar Producto</button>
                     </form>
-                </div>
 
-                <!-- List Products -->
-                <div class="card">
-                    <h2>📋 Lista de Productos</h2>
-                    <button class="btn btn-primary" onclick="loadProducts()">🔄 Recargar</button>
-                    <div id="productsTable" class="loading">Cargando productos...</div>
+                    <h3>Lista de Productos</h3>
+                    <div id="productsLoading" class="loading hidden">Cargando productos...</div>
+                    <table id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>SKU</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsBody"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Sales Tab -->
             <div id="salesTab" class="tab-content">
-                <!-- Create Sale -->
                 <div class="card">
-                    <h2>💰 Crear Nueva Venta</h2>
+                    <h2>💰 Realizar Venta</h2>
                     <div id="saleAlert"></div>
-                    
-                    <h3>Agregar Productos</h3>
+
+                    <h3>Agregar Productos a la Venta</h3>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Producto</label>
-                            <select id="saleProductSelect">
-                                <option value="">Seleccione un producto...</option>
+                            <select id="saleProduct">
+                                <option value="">Seleccionar producto...</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Cantidad</label>
-                            <input type="number" id="saleQuantity" min="1" value="1">
+                            <input type="number" id="saleQuantity" value="1" min="1">
                         </div>
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <button type="button" class="btn btn-success" onclick="addSaleItem()">➕ Agregar</button>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button class="btn btn-primary" onclick="addSaleItem()">Agregar</button>
                         </div>
                     </div>
 
-                    <div id="saleItemsList"></div>
-
-                    <div class="form-group">
-                        <label>Notas (Opcional)</label>
-                        <textarea id="saleNotes" placeholder="Agregar comentarios sobre la venta..."></textarea>
+                    <div id="saleItemsContainer" class="hidden">
+                        <h3>Productos en la Venta</h3>
+                        <div id="saleItems"></div>
+                        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                            <h3>Total: $<span id="saleTotal">0.00</span></h3>
+                            <button class="btn btn-success" onclick="completeSale()">💰 Completar Venta</button>
+                            <button class="btn btn-danger" onclick="cancelSale()">❌ Cancelar</button>
+                        </div>
                     </div>
-
-                    <button type="button" class="btn btn-primary" onclick="createSale()">✅ Completar Venta</button>
-                    <button type="button" class="btn btn-warning" onclick="clearSaleForm()">🗑️ Limpiar</button>
                 </div>
 
-                <!-- List Sales -->
                 <div class="card">
                     <h2>📋 Historial de Ventas</h2>
-                    <button class="btn btn-primary" onclick="loadSales()">🔄 Recargar</button>
-                    <div id="salesTable" class="loading">Cargando ventas...</div>
+                    <div id="salesLoading" class="loading hidden">Cargando ventas...</div>
+                    <div id="salesList"></div>
                 </div>
             </div>
 
-            <!-- Stats Tab -->
             <div id="statsTab" class="tab-content">
                 <div class="card">
-                    <h2>📊 Estadísticas Generales</h2>
-                    <div id="statsContent" class="loading">Cargando estadísticas...</div>
+                    <h2>📊 Estadísticas del Sistema</h2>
+                    <div id="statsLoading" class="loading hidden">Cargando estadísticas...</div>
+                    <div id="statsContent"></div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Modal for Sale Details -->
-    <div id="saleDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📄 Detalles de la Venta</h2>
-                <button class="close-btn" onclick="closeSaleDetailsModal()">&times;</button>
+            <div id="excelTab" class="tab-content">
+                <div class="card">
+                    <h2>📤 Carga Masiva de Productos desde Excel</h2>
+                    <div id="excelAlert"></div>
+                    
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Sube un archivo Excel (.xlsx, .xls) con tus productos para cargarlos masivamente.
+                        <br>
+                        <a href="#" class="download-template" onclick="downloadTemplate(event)">
+                            📥 Descargar plantilla de ejemplo
+                        </a>
+                    </p>
+
+                    <div class="upload-container" id="uploadContainer">
+                        <div id="uploadArea">
+                            <p style="font-size: 48px; margin: 0;">📊</p>
+                            <h3 style="margin: 10px 0;">Arrastra tu archivo Excel aquí</h3>
+                            <p style="color: #666; margin: 10px 0;">o</p>
+                            
+                            <div class="file-input-wrapper">
+                                <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+                                <label for="excelFileInput" class="file-input-label">
+                                    📁 Seleccionar Archivo
+                                </label>
+                            </div>
+                            
+                            <p style="color: #999; font-size: 12px; margin-top: 15px;">
+                                Formatos aceptados: .xlsx, .xls | Tamaño máximo: 10MB
+                            </p>
+                        </div>
+
+                        <div id="fileInfo" class="file-info hidden">
+                            <strong>📄 Archivo seleccionado:</strong>
+                            <p id="fileName" style="margin: 5px 0 0 0;"></p>
+                            <button class="btn btn-primary" onclick="uploadExcelFile()" style="margin-top: 10px;">
+                                🚀 Subir y Procesar
+                            </button>
+                            <button class="btn btn-warning" onclick="cancelFileSelection()" style="margin-top: 10px;">
+                                ❌ Cancelar
+                            </button>
+                        </div>
+
+                        <div id="uploadProgress" class="hidden" style="margin-top: 20px;">
+                            <p style="margin-bottom: 10px;"><strong id="progressMessage">Iniciando carga...</strong></p>
+                            <div class="progress-container">
+                                <div class="progress-text" id="progressText">0%</div>
+                                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                            </div>
+                            <div class="spinner"></div>
+                        </div>
+
+                        <div id="uploadResults" class="hidden">
+                            <h3 style="color: #27ae60; margin-bottom: 15px;">✅ Carga Completada</h3>
+                            
+                            <div class="result-summary">
+                                <div class="result-card success">
+                                    <h4 id="successCount">0</h4>
+                                    <p>Exitosos</p>
+                                </div>
+                                <div class="result-card error">
+                                    <h4 id="errorCount">0</h4>
+                                    <p>Con Errores</p>
+                                </div>
+                                <div class="result-card warning">
+                                    <h4 id="duplicateCount">0</h4>
+                                    <p>Duplicados</p>
+                                </div>
+                                <div class="result-card" style="background: #e3f2fd; border-color: #2196f3;">
+                                    <h4 id="totalCount">0</h4>
+                                    <p>Total Procesados</p>
+                                </div>
+                            </div>
+
+                            <div id="errorDetails" class="hidden">
+                                <h4>⚠️ Detalles de Errores:</h4>
+                                <div id="errorList" class="error-list"></div>
+                            </div>
+
+                            <button class="btn btn-success" onclick="resetUploadForm()">
+                                🔄 Cargar Otro Archivo
+                            </button>
+                            <button class="btn btn-primary" onclick="showTab('products')">
+                                📦 Ver Productos
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
+                        <h3>📋 Formato del Excel</h3>
+                        <p style="margin: 10px 0;">Tu archivo Excel debe tener las siguientes columnas:</p>
+                        <table style="margin-top: 15px;">
+                            <thead>
+                                <tr>
+                                    <th>Columna</th>
+                                    <th>Tipo</th>
+                                    <th>Obligatorio</th>
+                                    <th>Ejemplo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Nombre</strong></td>
+                                    <td>Texto</td>
+                                    <td>✅ Sí</td>
+                                    <td>Laptop HP Pavilion</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SKU</strong></td>
+                                    <td>Texto</td>
+                                    <td>❌ No</td>
+                                    <td>LP-001</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Precio</strong></td>
+                                    <td>Número</td>
+                                    <td>✅ Sí</td>
+                                    <td>850.00</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Stock</strong></td>
+                                    <td>Número</td>
+                                    <td>✅ Sí</td>
+                                    <td>15</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Min_Stock</strong></td>
+                                    <td>Número</td>
+                                    <td>❌ No</td>
+                                    <td>5</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Categoría</strong></td>
+                                    <td>Número</td>
+                                    <td>❌ No</td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Descripción</strong></td>
+                                    <td>Texto</td>
+                                    <td>❌ No</td>
+                                    <td>Laptop gamer 16GB RAM</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div id="saleDetailsContent"></div>
         </div>
     </div>
 
     <script>
         const API_URL = 'http://localhost:8000';
-        let token = null;
-        let currentSaleItems = [];
-        let availableProducts = [];
+        let token = localStorage.getItem('token');
+        let currentUser = null;
+        let saleItems = [];
 
-        // ============================================
-        // AUTHENTICATION
-        // ============================================
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await login();
+        });
 
-        async function login(event) {
-            event.preventDefault();
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await createProduct();
+        });
+
+        async function login() {
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
 
@@ -553,48 +868,88 @@
 
                 if (response.ok) {
                     token = data.access_token;
-                    showAlert('loginAlert', 'Login exitoso', 'success');
-                    setTimeout(() => {
-                        document.getElementById('loginSection').classList.add('hidden');
-                        document.getElementById('mainApp').classList.remove('hidden');
-                        document.getElementById('userInfo').classList.remove('hidden');
-                        document.getElementById('username').textContent = `👤 ${username}`;
-                        loadProducts();
-                        loadStats();
-                    }, 500);
+                    localStorage.setItem('token', token);
+                    currentUser = username;
+                    document.getElementById('currentUser').textContent = username;
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    loadProducts();
                 } else {
                     showAlert('loginAlert', data.detail || 'Error al iniciar sesión', 'error');
                 }
             } catch (error) {
-                showAlert('loginAlert', 'Error de conexión con el servidor', 'error');
+                showAlert('loginAlert', 'Error de conexión', 'error');
             }
         }
 
         function logout() {
+            localStorage.removeItem('token');
             token = null;
-            currentSaleItems = [];
-            availableProducts = [];
-            document.getElementById('loginSection').classList.remove('hidden');
+            currentUser = null;
+            document.getElementById('loginPage').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('userInfo').classList.add('hidden');
-            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginForm').reset();
         }
 
-        // ============================================
-        // PRODUCTS
-        // ============================================
+        async function loadProducts() {
+            document.getElementById('productsLoading').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/products`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-        async function createProduct(event) {
-            event.preventDefault();
+                const products = await response.json();
+                
+                const tbody = document.getElementById('productsBody');
+                tbody.innerHTML = '';
 
+                const saleSelect = document.getElementById('saleProduct');
+                saleSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
+
+                products.forEach(product => {
+                    const row = tbody.insertRow();
+                    const stockBadge = product.stock <= product.min_stock ? 
+                        `<span class="badge badge-danger">${product.stock}</span>` :
+                        `<span class="badge badge-success">${product.stock}</span>`;
+                    
+                    row.innerHTML = `
+                        <td>${product.id}</td>
+                        <td>${product.name}</td>
+                        <td>${product.sku || '-'}</td>
+                        <td>$${parseFloat(product.price).toFixed(2)}</td>
+                        <td>${stockBadge}</td>
+                        <td>${product.is_active ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>'}</td>
+                        <td>
+                            <button class="btn btn-danger btn-small" onclick="deleteProduct(${product.id})">Eliminar</button>
+                        </td>
+                    `;
+
+                    if (product.is_active && product.stock > 0) {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = `${product.name} - $${parseFloat(product.price).toFixed(2)} (Stock: ${product.stock})`;
+                        option.dataset.price = product.price;
+                        option.dataset.stock = product.stock;
+                        saleSelect.appendChild(option);
+                    }
+                });
+
+                document.getElementById('productsLoading').classList.add('hidden');
+            } catch (error) {
+                showAlert('productAlert', 'Error al cargar productos', 'error');
+                document.getElementById('productsLoading').classList.add('hidden');
+            }
+        }
+
+        async function createProduct() {
             const product = {
                 name: document.getElementById('productName').value,
-                description: document.getElementById('productDescription').value,
                 sku: document.getElementById('productSku').value || null,
                 price: parseFloat(document.getElementById('productPrice').value),
                 stock: parseInt(document.getElementById('productStock').value),
                 min_stock: parseInt(document.getElementById('productMinStock').value),
-                category_id: parseInt(document.getElementById('productCategory').value),
+                description: document.getElementById('productDescription').value || null,
                 is_active: true
             };
 
@@ -611,8 +966,8 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showAlert('productAlert', `Producto "${data.name}" creado exitosamente`, 'success');
-                    event.target.reset();
+                    showAlert('productAlert', '✅ Producto creado exitosamente', 'success');
+                    document.getElementById('productForm').reset();
                     loadProducts();
                 } else {
                     showAlert('productAlert', data.detail || 'Error al crear producto', 'error');
@@ -622,158 +977,122 @@
             }
         }
 
-        async function loadProducts() {
-            const container = document.getElementById('productsTable');
-            container.innerHTML = '<div class="loading">Cargando productos...</div>';
+        async function deleteProduct(id) {
+            if (!confirm('¿Estás seguro de eliminar este producto?')) return;
 
             try {
-                const response = await fetch(`${API_URL}/api/products`, {
+                const response = await fetch(`${API_URL}/api/products/${id}`, {
+                    method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                const products = await response.json();
-
                 if (response.ok) {
-                    availableProducts = products;
-                    updateSaleProductSelect();
-
-                    let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>SKU</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead><tbody>';
-                    products.forEach(p => {
-                        const stockBadge = p.stock <= p.min_stock ? 
-                            '<span class="badge badge-danger">Stock Bajo</span>' : 
-                            '<span class="badge badge-success">Stock OK</span>';
-                        html += `<tr>
-                            <td>${p.id}</td>
-                            <td>${p.name}</td>
-                            <td>${p.sku || 'N/A'}</td>
-                            <td>$${parseFloat(p.price).toFixed(2)}</td>
-                            <td>${p.stock} ${stockBadge}</td>
-                            <td>${p.is_active ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>'}</td>
-                        </tr>`;
-                    });
-                    html += '</tbody></table>';
-                    container.innerHTML = html;
+                    showAlert('productAlert', '✅ Producto eliminado', 'success');
+                    loadProducts();
                 } else {
-                    container.innerHTML = '<p>Error al cargar productos</p>';
+                    const data = await response.json();
+                    showAlert('productAlert', data.detail || 'Error al eliminar', 'error');
                 }
             } catch (error) {
-                container.innerHTML = '<p>Error de conexión</p>';
+                showAlert('productAlert', 'Error de conexión', 'error');
             }
-        }
-
-        // ============================================
-        // SALES
-        // ============================================
-
-        function updateSaleProductSelect() {
-            const select = document.getElementById('saleProductSelect');
-            select.innerHTML = '<option value="">Seleccione un producto...</option>';
-            
-            availableProducts
-                .filter(p => p.is_active && p.stock > 0)
-                .forEach(p => {
-                    select.innerHTML += `<option value="${p.id}" data-price="${p.price}" data-stock="${p.stock}">${p.name} - Stock: ${p.stock} - $${parseFloat(p.price).toFixed(2)}</option>`;
-                });
         }
 
         function addSaleItem() {
-            const select = document.getElementById('saleProductSelect');
+            const select = document.getElementById('saleProduct');
             const quantity = parseInt(document.getElementById('saleQuantity').value);
 
             if (!select.value) {
-                showAlert('saleAlert', 'Seleccione un producto', 'warning');
+                showAlert('saleAlert', 'Selecciona un producto', 'warning');
                 return;
             }
 
-            if (quantity <= 0) {
-                showAlert('saleAlert', 'La cantidad debe ser mayor a 0', 'warning');
-                return;
-            }
-
+            const option = select.options[select.selectedIndex];
             const productId = parseInt(select.value);
-            const selectedOption = select.options[select.selectedIndex];
-            const productName = selectedOption.text.split(' - ')[0];
-            const price = parseFloat(selectedOption.dataset.price);
-            const availableStock = parseInt(selectedOption.dataset.stock);
+            const productName = option.textContent.split(' - ')[0];
+            const price = parseFloat(option.dataset.price);
+            const stock = parseInt(option.dataset.stock);
 
-            // Verificar stock disponible
-            if (quantity > availableStock) {
-                showAlert('saleAlert', `Stock insuficiente. Disponible: ${availableStock}`, 'error');
+            if (quantity > stock) {
+                showAlert('saleAlert', `Stock insuficiente. Disponible: ${stock}`, 'error');
                 return;
             }
 
-            // Verificar si el producto ya está en la lista
-            const existingItem = currentSaleItems.find(item => item.product_id === productId);
-            if (existingItem) {
-                existingItem.quantity += quantity;
-                existingItem.subtotal = existingItem.quantity * existingItem.unit_price;
+            const existing = saleItems.find(item => item.product_id === productId);
+            if (existing) {
+                if (existing.quantity + quantity > stock) {
+                    showAlert('saleAlert', `Stock insuficiente. Disponible: ${stock}`, 'error');
+                    return;
+                }
+                existing.quantity += quantity;
             } else {
-                currentSaleItems.push({
+                saleItems.push({
                     product_id: productId,
                     product_name: productName,
-                    quantity: quantity,
-                    unit_price: price,
-                    subtotal: quantity * price
+                    price: price,
+                    quantity: quantity
                 });
             }
 
             renderSaleItems();
-            select.value = '';
             document.getElementById('saleQuantity').value = 1;
-            showAlert('saleAlert', 'Producto agregado', 'success');
-        }
-
-        function removeSaleItem(index) {
-            currentSaleItems.splice(index, 1);
-            renderSaleItems();
         }
 
         function renderSaleItems() {
-            const container = document.getElementById('saleItemsList');
-            
-            if (currentSaleItems.length === 0) {
-                container.innerHTML = '<p style="color: #999; padding: 15px;">No hay productos agregados</p>';
+            if (saleItems.length === 0) {
+                document.getElementById('saleItemsContainer').classList.add('hidden');
                 return;
             }
+
+            document.getElementById('saleItemsContainer').classList.remove('hidden');
+            const container = document.getElementById('saleItems');
+            container.innerHTML = '';
 
             let total = 0;
-            let html = '<h3>Productos en la Venta</h3>';
-            
-            currentSaleItems.forEach((item, index) => {
-                total += item.subtotal;
-                html += `
-                    <div class="sale-item">
-                        <div class="sale-item-header">
-                            <div>
-                                <strong>${item.product_name}</strong><br>
-                                <small>Cantidad: ${item.quantity} x $${item.unit_price.toFixed(2)} = $${item.subtotal.toFixed(2)}</small>
-                            </div>
-                            <button class="btn btn-danger btn-small" onclick="removeSaleItem(${index})">❌</button>
-                        </div>
+
+            saleItems.forEach((item, index) => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+
+                const div = document.createElement('div');
+                div.className = 'sale-item';
+                div.innerHTML = `
+                    <div class="sale-item-header">
+                        <strong>${item.product_name}</strong>
+                        <button class="btn btn-danger btn-small" onclick="removeSaleItem(${index})">❌</button>
                     </div>
+                    <p>Cantidad: ${item.quantity} x $${item.price.toFixed(2)} = $${subtotal.toFixed(2)}</p>
                 `;
+                container.appendChild(div);
             });
 
-            html += `<div style="text-align: right; margin-top: 15px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
-                <h3>Total: $${total.toFixed(2)}</h3>
-            </div>`;
-
-            container.innerHTML = html;
+            document.getElementById('saleTotal').textContent = total.toFixed(2);
         }
 
-        async function createSale() {
-            if (currentSaleItems.length === 0) {
-                showAlert('saleAlert', 'Debe agregar al menos un producto', 'warning');
+        function removeSaleItem(index) {
+            saleItems.splice(index, 1);
+            renderSaleItems();
+        }
+
+        function cancelSale() {
+            if (confirm('¿Cancelar la venta actual?')) {
+                saleItems = [];
+                renderSaleItems();
+            }
+        }
+
+        async function completeSale() {
+            if (saleItems.length === 0) {
+                showAlert('saleAlert', 'Agrega productos a la venta', 'warning');
                 return;
             }
 
-            const saleData = {
-                items: currentSaleItems.map(item => ({
+            const sale = {
+                items: saleItems.map(item => ({
                     product_id: item.product_id,
                     quantity: item.quantity,
-                    unit_price: item.unit_price
-                })),
-                notes: document.getElementById('saleNotes').value || null
+                    price: item.price
+                }))
             };
 
             try {
@@ -783,215 +1102,275 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify(saleData)
+                    body: JSON.stringify(sale)
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    showAlert('saleAlert', `✅ Venta #${data.id} creada exitosamente por $${parseFloat(data.total_amount).toFixed(2)}`, 'success');
-                    clearSaleForm();
-                    loadProducts(); // Actualizar stock
+                    showAlert('saleAlert', `✅ Venta completada! Total: $${data.total}`, 'success');
+                    saleItems = [];
+                    renderSaleItems();
+                    loadProducts();
                     loadSales();
-                    loadStats();
                 } else {
-                    showAlert('saleAlert', data.detail || 'Error al crear venta', 'error');
+                    showAlert('saleAlert', data.detail || 'Error al procesar venta', 'error');
                 }
             } catch (error) {
                 showAlert('saleAlert', 'Error de conexión', 'error');
             }
         }
 
-        function clearSaleForm() {
-            currentSaleItems = [];
-            renderSaleItems();
-            document.getElementById('saleNotes').value = '';
-            document.getElementById('saleProductSelect').value = '';
-            document.getElementById('saleQuantity').value = 1;
-        }
-
         async function loadSales() {
-            const container = document.getElementById('salesTable');
-            container.innerHTML = '<div class="loading">Cargando ventas...</div>';
-
+            document.getElementById('salesLoading').classList.remove('hidden');
+            
             try {
                 const response = await fetch(`${API_URL}/api/sales`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 const sales = await response.json();
+                
+                const container = document.getElementById('salesList');
+                container.innerHTML = '';
 
-                if (response.ok) {
-                    if (sales.length === 0) {
-                        container.innerHTML = '<p>No hay ventas registradas</p>';
-                        return;
-                    }
-
-                    let html = '<table><thead><tr><th>ID</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>';
-                    sales.forEach(s => {
-                        const date = new Date(s.sale_date).toLocaleString('es-CO');
-                        const statusBadge = s.status === 'completed' ? 
-                            '<span class="badge badge-success">Completada</span>' : 
-                            '<span class="badge badge-danger">Cancelada</span>';
+                if (sales.length === 0) {
+                    container.innerHTML = '<p>No hay ventas registradas</p>';
+                } else {
+                    sales.forEach(sale => {
+                        const div = document.createElement('div');
+                        div.className = 'sale-item';
                         
-                        html += `<tr>
-                            <td>${s.id}</td>
-                            <td>${date}</td>
-                            <td>$${parseFloat(s.total_amount).toFixed(2)}</td>
-                            <td>${statusBadge}</td>
-                            <td>${s.notes || '-'}</td>
-                            <td>
-                                <button class="btn btn-info btn-small" onclick="viewSaleDetails(${s.id})">👁️ Ver</button>
-                                ${s.status === 'completed' ? `<button class="btn btn-danger btn-small" onclick="cancelSale(${s.id})">❌ Cancelar</button>` : ''}
-                            </td>
-                        </tr>`;
+                        const date = new Date(sale.created_at).toLocaleString('es-ES');
+                        
+                        let itemsHtml = '<div class="sale-items-list">';
+                        if (sale.items && sale.items.length > 0) {
+                            sale.items.forEach(item => {
+                                itemsHtml += `<p>• ${item.product_name || 'Producto'} - Cantidad: ${item.quantity} - $${parseFloat(item.price).toFixed(2)}</p>`;
+                            });
+                        }
+                        itemsHtml += '</div>';
+
+                        div.innerHTML = `
+                            <div class="sale-item-header">
+                                <div>
+                                    <strong>Venta #${sale.id}</strong>
+                                    <p style="margin: 0; color: #666; font-size: 12px;">${date}</p>
+                                </div>
+                                <strong style="color: #27ae60;">$${parseFloat(sale.total).toFixed(2)}</strong>
+                            </div>
+                            ${itemsHtml}
+                        `;
+                        container.appendChild(div);
                     });
-                    html += '</tbody></table>';
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '<p>Error al cargar ventas</p>';
                 }
+
+                document.getElementById('salesLoading').classList.add('hidden');
             } catch (error) {
-                container.innerHTML = '<p>Error de conexión</p>';
+                showAlert('saleAlert', 'Error al cargar ventas', 'error');
+                document.getElementById('salesLoading').classList.add('hidden');
             }
         }
-
-        async function viewSaleDetails(saleId) {
-            try {
-                const response = await fetch(`${API_URL}/api/sales/${saleId}/items`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                const items = await response.json();
-
-                if (response.ok) {
-                    let html = '<table><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead><tbody>';
-                    let total = 0;
-                    items.forEach(item => {
-                        total += parseFloat(item.subtotal);
-                        html += `<tr>
-                            <td>${item.product_name}</td>
-                            <td>${item.quantity}</td>
-                            <td>$${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td>$${parseFloat(item.subtotal).toFixed(2)}</td>
-                        </tr>`;
-                    });
-                    html += `<tr style="font-weight: bold; background: #f0f0f0;">
-                        <td colspan="3" style="text-align: right;">TOTAL:</td>
-                        <td>$${total.toFixed(2)}</td>
-                    </tr>`;
-                    html += '</tbody></table>';
-                    
-                    document.getElementById('saleDetailsContent').innerHTML = html;
-                    document.getElementById('saleDetailsModal').classList.add('active');
-                } else {
-                    alert('Error al cargar detalles de la venta');
-                }
-            } catch (error) {
-                alert('Error de conexión');
-            }
-        }
-
-        function closeSaleDetailsModal() {
-            document.getElementById('saleDetailsModal').classList.remove('active');
-        }
-
-        async function cancelSale(saleId) {
-            if (!confirm(`¿Está seguro de cancelar la venta #${saleId}? El stock será restaurado.`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/api/sales/${saleId}/cancel`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert('✅ ' + data.message);
-                    loadSales();
-                    loadProducts();
-                    loadStats();
-                } else {
-                    alert('❌ ' + (data.detail || 'Error al cancelar venta'));
-                }
-            } catch (error) {
-                alert('Error de conexión');
-            }
-        }
-
-        // ============================================
-        // STATISTICS
-        // ============================================
 
         async function loadStats() {
-            const container = document.getElementById('statsContent');
-
+            document.getElementById('statsLoading').classList.remove('hidden');
+            
             try {
-                const response = await fetch(`${API_URL}/api/sales/stats/summary`, {
+                const response = await fetch(`${API_URL}/api/sales/stats`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    const stats = data.summary;
-                    const topProducts = data.top_products;
-
-                    let html = '<div class="stats-grid">';
-                    
-                    html += `
+                const stats = await response.json();
+                
+                const container = document.getElementById('statsContent');
+                container.innerHTML = `
+                    <div class="stats-grid">
                         <div class="stat-card">
-                            <h3>💰 Total Ventas</h3>
+                            <h3>💰 Ventas Totales</h3>
                             <p>${stats.total_sales || 0}</p>
                         </div>
                         <div class="stat-card">
-                            <h3>💵 Monto Total</h3>
-                            <p>$${parseFloat(stats.total_amount || 0).toFixed(2)}</p>
+                            <h3>💵 Ingresos Totales</h3>
+                            <p>$${parseFloat(stats.total_revenue || 0).toFixed(2)}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>📦 Productos Vendidos</h3>
+                            <p>${stats.total_products_sold || 0}</p>
                         </div>
                         <div class="stat-card">
                             <h3>📊 Promedio por Venta</h3>
-                            <p>$${parseFloat(stats.avg_sale_amount || 0).toFixed(2)}</p>
+                            <p>$${parseFloat(stats.average_sale || 0).toFixed(2)}</p>
                         </div>
-                        <div class="stat-card">
-                            <h3>🔝 Venta Máxima</h3>
-                            <p>$${parseFloat(stats.max_sale || 0).toFixed(2)}</p>
-                        </div>
-                    `;
-                    
-                    html += '</div>';
+                    </div>
+                `;
 
-                    if (topProducts && topProducts.length > 0) {
-                        html += '<h3 style="margin-top: 30px;">🏆 Top 5 Productos Más Vendidos</h3>';
-                        html += '<table><thead><tr><th>Producto</th><th>Cantidad Vendida</th></tr></thead><tbody>';
-                        topProducts.forEach(p => {
-                            html += `<tr>
-                                <td>${p.name}</td>
-                                <td><strong>${p.total_quantity}</strong> unidades</td>
-                            </tr>`;
-                        });
-                        html += '</tbody></table>';
-                    }
-
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '<p>No hay estadísticas disponibles</p>';
-                }
+                document.getElementById('statsLoading').classList.add('hidden');
             } catch (error) {
-                container.innerHTML = '<p>Error al cargar estadísticas</p>';
+                showAlert('saleAlert', 'Error al cargar estadísticas', 'error');
+                document.getElementById('statsLoading').classList.add('hidden');
             }
         }
 
-        // ============================================
-        // UTILITIES
-        // ============================================
+        let selectedFile = null;
 
-        function showAlert(elementId, message, type) {
-            const alertDiv = document.getElementById(elementId);
-            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => { alertDiv.innerHTML = ''; }, 5000);
+        const uploadContainer = document.getElementById('uploadContainer');
+
+        if (uploadContainer) {
+            uploadContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadContainer.classList.add('drag-over');
+            });
+
+            uploadContainer.addEventListener('dragleave', () => {
+                uploadContainer.classList.remove('drag-over');
+            });
+
+            uploadContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadContainer.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                        handleFile(file);
+                    } else {
+                        showAlert('excelAlert', 'Por favor selecciona un archivo Excel (.xlsx o .xls)', 'error');
+                    }
+                }
+            });
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            selectedFile = file;
+            document.getElementById('fileName').textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+            document.getElementById('uploadArea').classList.add('hidden');
+            document.getElementById('fileInfo').classList.remove('hidden');
+        }
+
+        function cancelFileSelection() {
+            selectedFile = null;
+            document.getElementById('excelFileInput').value = '';
+            document.getElementById('uploadArea').classList.remove('hidden');
+            document.getElementById('fileInfo').classList.add('hidden');
+        }
+
+        async function uploadExcelFile() {
+            if (!selectedFile) {
+                showAlert('excelAlert', 'No hay archivo seleccionado', 'warning');
+                return;
+            }
+
+            document.getElementById('fileInfo').classList.add('hidden');
+            document.getElementById('uploadProgress').classList.remove('hidden');
+            document.getElementById('uploadResults').classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch(`${API_URL}/api/products/upload/excel`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                    loadProducts();
+                } else {
+                    showAlert('excelAlert', data.detail || 'Error al procesar archivo', 'error');
+                    resetUploadForm();
+                }
+            } catch (error) {
+                showAlert('excelAlert', 'Error de conexión con el servidor', 'error');
+                resetUploadForm();
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('uploadProgress').classList.add('hidden');
+            document.getElementById('uploadResults').classList.remove('hidden');
+
+            document.getElementById('successCount').textContent = data.exitosos;
+            document.getElementById('errorCount').textContent = data.errores;
+            document.getElementById('duplicateCount').textContent = data.duplicados;
+            document.getElementById('totalCount').textContent = data.total_procesados;
+
+            if (data.detalles_errores && data.detalles_errores.length > 0) {
+                document.getElementById('errorDetails').classList.remove('hidden');
+                const errorList = document.getElementById('errorList');
+                errorList.innerHTML = '';
+                
+                data.detalles_errores.forEach(error => {
+                    const errorItem = document.createElement('div');
+                    errorItem.className = 'error-item';
+                    errorItem.textContent = error;
+                    errorList.appendChild(errorItem);
+                });
+            }
+
+            if (data.exitosos > 0) {
+                showAlert('excelAlert', 
+                    `✅ ${data.exitosos} productos cargados exitosamente`, 
+                    'success'
+                );
+            }
+        }
+
+        function resetUploadForm() {
+            selectedFile = null;
+            document.getElementById('excelFileInput').value = '';
+            document.getElementById('uploadArea').classList.remove('hidden');
+            document.getElementById('fileInfo').classList.add('hidden');
+            document.getElementById('uploadProgress').classList.add('hidden');
+            document.getElementById('uploadResults').classList.add('hidden');
+            document.getElementById('errorDetails').classList.add('hidden');
+            
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = '0%';
+            document.getElementById('progressMessage').textContent = 'Iniciando carga...';
+        }
+
+        async function downloadTemplate(event) {
+            event.preventDefault();
+            
+            try {
+                const response = await fetch(`${API_URL}/api/products/download/template`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'plantilla_productos.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showAlert('excelAlert', '📥 Plantilla descargada exitosamente', 'success');
+                } else {
+                    showAlert('excelAlert', 'Error al descargar plantilla', 'error');
+                }
+            } catch (error) {
+                showAlert('excelAlert', 'Error de conexión', 'error');
+            }
         }
 
         function showTab(tabName) {
@@ -1008,15 +1387,26 @@
                 loadStats();
             } else if (tabName === 'products') {
                 loadProducts();
+            } else if (tabName === 'excel') {
+                resetUploadForm();
             }
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('saleDetailsModal');
-            if (event.target === modal) {
-                closeSaleDetailsModal();
-            }
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        if (token) {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            loadProducts();
         }
     </script>
 </body>
