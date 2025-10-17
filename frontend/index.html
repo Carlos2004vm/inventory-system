@@ -315,59 +315,6 @@
             color: #856404;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            color: #667eea;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .close-btn:hover {
-            color: #333;
-        }
-
         .upload-container {
             border: 2px dashed #667eea;
             border-radius: 10px;
@@ -421,7 +368,7 @@
             background: #e0e0e0;
             border-radius: 10px;
             overflow: hidden;
-            margin: 20px 0;
+            margin: 15px 0;
             height: 30px;
             position: relative;
         }
@@ -449,98 +396,87 @@
             z-index: 1;
         }
 
-        .file-info {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-            border-left: 4px solid #2196f3;
-        }
-
-        .result-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .result-card {
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .result-card.success {
-            background: #d4edda;
-            border: 2px solid #28a745;
-        }
-
-        .result-card.error {
-            background: #f8d7da;
-            border: 2px solid #dc3545;
-        }
-
-        .result-card.warning {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-        }
-
-        .result-card h4 {
-            margin: 0 0 5px 0;
-            font-size: 24px;
-        }
-
-        .result-card p {
-            margin: 0;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .error-list {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #fff;
-            padding: 15px;
-            border-radius: 5px;
+        .upload-item {
+            background: white;
             border: 1px solid #ddd;
-            text-align: left;
-            margin-top: 15px;
-        }
-
-        .error-item {
-            padding: 8px;
-            margin: 5px 0;
-            background: #fff3cd;
-            border-left: 3px solid #ffc107;
-            border-radius: 3px;
-            font-size: 13px;
-        }
-
-        .download-template {
-            display: inline-block;
+            border-radius: 8px;
+            padding: 15px;
             margin: 10px 0;
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .download-template:hover {
-            text-decoration: underline;
+        .upload-item.processing {
+            border-left: 4px solid #3498db;
+        }
+
+        .upload-item.completed {
+            border-left: 4px solid #27ae60;
+        }
+
+        .upload-item.error {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .upload-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .upload-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .upload-stat {
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .upload-stat strong {
+            display: block;
+            font-size: 18px;
+            margin-top: 5px;
         }
 
         .spinner {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #667eea;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            display: inline-block;
+            margin-left: 10px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .error-list {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .error-item {
+            padding: 5px;
+            margin: 3px 0;
+            background: white;
+            border-left: 3px solid #f39c12;
+            padding-left: 10px;
         }
     </style>
 </head>
@@ -624,6 +560,10 @@
                         🔄 Reiniciar Numeración de IDs
                     </button>
 
+                    <button class="btn btn-danger" onclick="deleteAllProducts()" style="margin-top: 10px;">
+                        🗑️ Eliminar Todos los Productos
+                    </button>
+
                     <h3>Lista de Productos</h3>
                     <div id="productsLoading" class="loading hidden">Cargando productos...</div>
                     <table id="productsTable">
@@ -693,13 +633,13 @@
 
             <div id="excelTab" class="tab-content">
                 <div class="card">
-                    <h2>📤 Carga Masiva de Productos desde Excel</h2>
+                    <h2>📤 Carga Masiva de Productos (Asíncrona)</h2>
                     <div id="excelAlert"></div>
                     
                     <p style="color: #666; margin-bottom: 20px;">
-                        Sube un archivo Excel (.xlsx, .xls) con tus productos para cargarlos masivamente.
-                        <br>
-                        <a href="#" class="download-template" onclick="downloadTemplate(event)">
+                        <strong>🚀 Nueva versión con procesamiento en segundo plano!</strong><br>
+                        Puedes subir archivos y seguir trabajando mientras se procesan.<br>
+                        <a href="#" class="download-template" onclick="downloadTemplate(event)" style="color: #667eea; text-decoration: none;">
                             📥 Descargar plantilla de ejemplo
                         </a>
                     </p>
@@ -718,123 +658,14 @@
                             </div>
                             
                             <p style="color: #999; font-size: 12px; margin-top: 15px;">
-                                Formatos aceptados: .xlsx, .xls | Tamaño máximo: 10MB
+                                Formatos: .xlsx, .xls | Máximo: 10MB | Hasta 3 archivos simultáneos
                             </p>
-                        </div>
-
-                        <div id="fileInfo" class="file-info hidden">
-                            <strong>📄 Archivo seleccionado:</strong>
-                            <p id="fileName" style="margin: 5px 0 0 0;"></p>
-                            <button class="btn btn-primary" onclick="uploadExcelFile()" style="margin-top: 10px;">
-                                🚀 Subir y Procesar
-                            </button>
-                            <button class="btn btn-warning" onclick="cancelFileSelection()" style="margin-top: 10px;">
-                                ❌ Cancelar
-                            </button>
-                        </div>
-
-                        <div id="uploadProgress" class="hidden" style="margin-top: 20px;">
-                            <p style="margin-bottom: 10px;"><strong id="progressMessage">Iniciando carga...</strong></p>
-                            <div class="progress-container">
-                                <div class="progress-text" id="progressText">0%</div>
-                                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-                            </div>
-                            <div class="spinner"></div>
-                        </div>
-
-                        <div id="uploadResults" class="hidden">
-                            <h3 style="color: #27ae60; margin-bottom: 15px;">✅ Carga Completada</h3>
-                            
-                            <div class="result-summary">
-                                <div class="result-card success">
-                                    <h4 id="successCount">0</h4>
-                                    <p>Exitosos</p>
-                                </div>
-                                <div class="result-card error">
-                                    <h4 id="errorCount">0</h4>
-                                    <p>Con Errores</p>
-                                </div>
-                                <div class="result-card warning">
-                                    <h4 id="duplicateCount">0</h4>
-                                    <p>Duplicados</p>
-                                </div>
-                                <div class="result-card" style="background: #e3f2fd; border-color: #2196f3;">
-                                    <h4 id="totalCount">0</h4>
-                                    <p>Total Procesados</p>
-                                </div>
-                            </div>
-
-                            <div id="errorDetails" class="hidden">
-                                <h4>⚠️ Detalles de Errores:</h4>
-                                <div id="errorList" class="error-list"></div>
-                            </div>
-
-                            <button class="btn btn-success" onclick="resetUploadForm()">
-                                🔄 Cargar Otro Archivo
-                            </button>
-                            <button class="btn btn-primary" onclick="showTab('products')">
-                                📦 Ver Productos
-                            </button>
                         </div>
                     </div>
 
-                    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
-                        <h3>📋 Formato del Excel</h3>
-                        <p style="margin: 10px 0;">Tu archivo Excel debe tener las siguientes columnas:</p>
-                        <table style="margin-top: 15px;">
-                            <thead>
-                                <tr>
-                                    <th>Columna</th>
-                                    <th>Tipo</th>
-                                    <th>Obligatorio</th>
-                                    <th>Ejemplo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Nombre</strong></td>
-                                    <td>Texto</td>
-                                    <td>✅ Sí</td>
-                                    <td>Laptop HP Pavilion</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>SKU</strong></td>
-                                    <td>Texto</td>
-                                    <td>❌ No</td>
-                                    <td>LP-001</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Precio</strong></td>
-                                    <td>Número</td>
-                                    <td>✅ Sí</td>
-                                    <td>850.00</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Stock</strong></td>
-                                    <td>Número</td>
-                                    <td>✅ Sí</td>
-                                    <td>15</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Min_Stock</strong></td>
-                                    <td>Número</td>
-                                    <td>❌ No</td>
-                                    <td>5</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Categoría</strong></td>
-                                    <td>Número</td>
-                                    <td>❌ No</td>
-                                    <td>1</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Descripción</strong></td>
-                                    <td>Texto</td>
-                                    <td>❌ No</td>
-                                    <td>Laptop gamer 16GB RAM</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div id="activeUploads">
+                        <h3 style="margin-top: 30px;">📋 Cargas Activas y Recientes</h3>
+                        <div id="uploadsList"></div>
                     </div>
                 </div>
             </div>
@@ -846,6 +677,8 @@
         let token = localStorage.getItem('token');
         let currentUser = null;
         let saleItems = [];
+        let activeUploads = {};
+        let uploadIntervals = {};
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -972,12 +805,13 @@
                 if (response.ok) {
                     showAlert('productAlert', '✅ Producto creado exitosamente', 'success');
                     document.getElementById('productForm').reset();
-                    loadProducts();
+                    await loadProducts();
                 } else {
                     showAlert('productAlert', data.detail || 'Error al crear producto', 'error');
                 }
             } catch (error) {
-                showAlert('productAlert', 'Error de conexión', 'error');
+                console.error('Error completo:', error);
+                showAlert('productAlert', 'Error de conexión con el servidor', 'error');
             }
         }
 
@@ -998,6 +832,67 @@
                     showAlert('productAlert', data.detail || 'Error al eliminar', 'error');
                 }
             } catch (error) {
+                showAlert('productAlert', 'Error de conexión', 'error');
+            }
+        }
+
+        async function resetProductSequence() {
+            if (!confirm('⚠️ Esto reiniciará la numeración de IDs a 1.\n\nSOLO funciona si NO hay productos.\n\n¿Continuar?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/products/reset-sequence`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('productAlert', '✅ ' + data.message, 'success');
+                } else {
+                    showAlert('productAlert', '⚠️ ' + data.detail, 'warning');
+                }
+            } catch (error) {
+                showAlert('productAlert', 'Error de conexión', 'error');
+            }
+        }
+
+async function deleteAllProducts() {
+            // Primera confirmación
+            if (!confirm('⚠️ ¡PELIGRO! Esta acción eliminará TODOS los productos del inventario.\n\n¿Estás ABSOLUTAMENTE seguro?')) {
+                return;
+            }
+
+            // Segunda confirmación
+            const confirmation = prompt('Para confirmar, escribe: ELIMINAR TODO');
+            
+            if (confirmation !== 'ELIMINAR TODO') {
+                showAlert('productAlert', 'Eliminación cancelada', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/products/delete-all?confirm=1`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('productAlert', data.message, 'success');
+                    await loadProducts();
+                } else {
+                    showAlert('productAlert', data.detail, 'error');
+                }
+            } catch (error) {
+                console.error('Error completo:', error);
                 showAlert('productAlert', 'Error de conexión', 'error');
             }
         }
@@ -1215,7 +1110,17 @@
             }
         }
 
-        let selectedFile = null;
+        // ============================================
+        // NUEVA FUNCIONALIDAD: CARGA ASÍNCRONA
+        // ============================================
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadExcelAsync(file);
+                event.target.value = ''; // Reset input
+            }
+        }
 
         const uploadContainer = document.getElementById('uploadContainer');
 
@@ -1237,7 +1142,7 @@
                 if (files.length > 0) {
                     const file = files[0];
                     if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-                        handleFile(file);
+                        uploadExcelAsync(file);
                     } else {
                         showAlert('excelAlert', 'Por favor selecciona un archivo Excel (.xlsx o .xls)', 'error');
                     }
@@ -1245,41 +1150,13 @@
             });
         }
 
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                handleFile(file);
-            }
-        }
-
-        function handleFile(file) {
-            selectedFile = file;
-            document.getElementById('fileName').textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-            document.getElementById('uploadArea').classList.add('hidden');
-            document.getElementById('fileInfo').classList.remove('hidden');
-        }
-
-        function cancelFileSelection() {
-            selectedFile = null;
-            document.getElementById('excelFileInput').value = '';
-            document.getElementById('uploadArea').classList.remove('hidden');
-            document.getElementById('fileInfo').classList.add('hidden');
-        }
-
-        async function uploadExcelFile() {
-            if (!selectedFile) {
-                showAlert('excelAlert', 'No hay archivo seleccionado', 'warning');
-                return;
-            }
-
-            document.getElementById('fileInfo').classList.add('hidden');
-            document.getElementById('uploadProgress').classList.remove('hidden');
-            document.getElementById('uploadResults').classList.add('hidden');
-
+        async function uploadExcelAsync(file) {
             const formData = new FormData();
-            formData.append('file', selectedFile);
+            formData.append('file', file);
 
             try {
+                showAlert('excelAlert', '⏳ Enviando archivo...', 'warning');
+
                 const response = await fetch(`${API_URL}/api/products/upload/excel`, {
                     method: 'POST',
                     headers: {
@@ -1290,61 +1167,151 @@
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    displayResults(data);
-                    loadProducts();
+                if (response.ok && response.status === 202) {
+                    showAlert('excelAlert', '✅ Archivo recibido. Procesando en segundo plano...', 'success');
+                    
+                    const uploadId = data.upload_id;
+                    activeUploads[uploadId] = {
+                        id: uploadId,
+                        filename: file.name,
+                        status: 'processing',
+                        started: new Date()
+                    };
+
+                    addUploadToUI(uploadId, file.name);
+                    startProgressPolling(uploadId);
                 } else {
                     showAlert('excelAlert', data.detail || 'Error al procesar archivo', 'error');
-                    resetUploadForm();
                 }
             } catch (error) {
                 showAlert('excelAlert', 'Error de conexión con el servidor', 'error');
-                resetUploadForm();
             }
         }
 
-        function displayResults(data) {
-            document.getElementById('uploadProgress').classList.add('hidden');
-            document.getElementById('uploadResults').classList.remove('hidden');
-
-            document.getElementById('successCount').textContent = data.exitosos;
-            document.getElementById('errorCount').textContent = data.errores;
-            document.getElementById('duplicateCount').textContent = data.duplicados;
-            document.getElementById('totalCount').textContent = data.total_procesados;
-
-            if (data.detalles_errores && data.detalles_errores.length > 0) {
-                document.getElementById('errorDetails').classList.remove('hidden');
-                const errorList = document.getElementById('errorList');
-                errorList.innerHTML = '';
-                
-                data.detalles_errores.forEach(error => {
-                    const errorItem = document.createElement('div');
-                    errorItem.className = 'error-item';
-                    errorItem.textContent = error;
-                    errorList.appendChild(errorItem);
-                });
-            }
-
-            if (data.exitosos > 0) {
-                showAlert('excelAlert', 
-                    `✅ ${data.exitosos} productos cargados exitosamente`, 
-                    'success'
-                );
-            }
-        }
-
-        function resetUploadForm() {
-            selectedFile = null;
-            document.getElementById('excelFileInput').value = '';
-            document.getElementById('uploadArea').classList.remove('hidden');
-            document.getElementById('fileInfo').classList.add('hidden');
-            document.getElementById('uploadProgress').classList.add('hidden');
-            document.getElementById('uploadResults').classList.add('hidden');
-            document.getElementById('errorDetails').classList.add('hidden');
+        function addUploadToUI(uploadId, filename) {
+            const uploadsList = document.getElementById('uploadsList');
             
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('progressText').textContent = '0%';
-            document.getElementById('progressMessage').textContent = 'Iniciando carga...';
+            const uploadItem = document.createElement('div');
+            uploadItem.id = `upload-${uploadId}`;
+            uploadItem.className = 'upload-item processing';
+            uploadItem.innerHTML = `
+                <div class="upload-header">
+                    <div>
+                        <strong>📄 ${filename}</strong>
+                        <span class="spinner"></span>
+                    </div>
+                    <span class="badge badge-warning">Procesando</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-text" id="progress-text-${uploadId}">0%</div>
+                    <div class="progress-bar" id="progress-bar-${uploadId}" style="width: 0%">0%</div>
+                </div>
+                <p id="message-${uploadId}" style="margin-top: 10px; color: #666; font-size: 13px;">Iniciando...</p>
+                <div id="stats-${uploadId}" class="upload-stats hidden"></div>
+                <div id="errors-${uploadId}" class="error-list hidden"></div>
+            `;
+            
+            uploadsList.insertBefore(uploadItem, uploadsList.firstChild);
+        }
+
+        function startProgressPolling(uploadId) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/products/upload/progress/${uploadId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        clearInterval(interval);
+                        updateUploadUI(uploadId, { status: 'error', message: 'Error al consultar progreso' });
+                        return;
+                    }
+
+                    const progress = await response.json();
+                    updateUploadUI(uploadId, progress);
+
+                    if (progress.status === 'completado' || progress.status === 'error') {
+                        clearInterval(interval);
+                        delete uploadIntervals[uploadId];
+                        
+                        if (progress.status === 'completado') {
+                            loadProducts(); // Recargar productos
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling progress:', error);
+                    clearInterval(interval);
+                }
+            }, 1000); // Consultar cada segundo
+
+            uploadIntervals[uploadId] = interval;
+        }
+
+        function updateUploadUI(uploadId, progress) {
+            const uploadItem = document.getElementById(`upload-${uploadId}`);
+            if (!uploadItem) return;
+
+            const progressBar = document.getElementById(`progress-bar-${uploadId}`);
+            const progressText = document.getElementById(`progress-text-${uploadId}`);
+            const message = document.getElementById(`message-${uploadId}`);
+            const statsDiv = document.getElementById(`stats-${uploadId}`);
+            const errorsDiv = document.getElementById(`errors-${uploadId}`);
+
+            // Actualizar barra de progreso
+            if (progressBar && progressText) {
+                const percent = progress.progress || 0;
+                progressBar.style.width = `${percent}%`;
+                progressBar.textContent = `${percent}%`;
+                progressText.textContent = `${percent}%`;
+            }
+
+            // Actualizar mensaje
+            if (message) {
+                message.textContent = progress.message || 'Procesando...';
+            }
+
+            // Actualizar estado
+            if (progress.status === 'completado') {
+                uploadItem.className = 'upload-item completed';
+                uploadItem.querySelector('.badge').className = 'badge badge-success';
+                uploadItem.querySelector('.badge').textContent = 'Completado';
+                uploadItem.querySelector('.spinner')?.remove();
+
+                // Mostrar estadísticas
+                if (statsDiv) {
+                    statsDiv.classList.remove('hidden');
+                    statsDiv.innerHTML = `
+                        <div class="upload-stat" style="background: #d4edda;">
+                            <span>Exitosos</span>
+                            <strong style="color: #27ae60;">${progress.exitosos || 0}</strong>
+                        </div>
+                        <div class="upload-stat" style="background: #f8d7da;">
+                            <span>Errores</span>
+                            <strong style="color: #e74c3c;">${progress.errores || 0}</strong>
+                        </div>
+                        <div class="upload-stat" style="background: #fff3cd;">
+                            <span>Duplicados</span>
+                            <strong style="color: #f39c12;">${progress.duplicados || 0}</strong>
+                        </div>
+                        <div class="upload-stat" style="background: #e3f2fd;">
+                            <span>Total</span>
+                            <strong style="color: #3498db;">${progress.total || 0}</strong>
+                        </div>
+                    `;
+                }
+
+                // Mostrar errores si hay
+                if (progress.detalles_errores && progress.detalles_errores.length > 0) {
+                    errorsDiv.classList.remove('hidden');
+                    errorsDiv.innerHTML = '<strong>⚠️ Errores encontrados:</strong><br>' + 
+                        progress.detalles_errores.map(e => `<div class="error-item">${e}</div>`).join('');
+                }
+            } else if (progress.status === 'error') {
+                uploadItem.className = 'upload-item error';
+                uploadItem.querySelector('.badge').className = 'badge badge-danger';
+                uploadItem.querySelector('.badge').textContent = 'Error';
+                uploadItem.querySelector('.spinner')?.remove();
+            }
         }
 
         async function downloadTemplate(event) {
@@ -1391,8 +1358,6 @@
                 loadStats();
             } else if (tabName === 'products') {
                 loadProducts();
-            } else if (tabName === 'excel') {
-                resetUploadForm();
             }
         }
 
@@ -1411,31 +1376,6 @@
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             loadProducts();
-        }
-
-        async function resetProductSequence() {
-            if (!confirm('⚠️ Esto reiniciará la numeración de IDs a 1.\n\nSOLO funciona si NO hay productos.\n\n¿Continuar?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/api/products/reset-sequence`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showAlert('productAlert', '✅ ' + data.message, 'success');
-                } else {
-                    showAlert('productAlert', '⚠️ ' + data.detail, 'warning');
-                }
-            } catch (error) {
-                showAlert('productAlert', 'Error de conexión', 'error');
-            }
         }
     </script>
 </body>
