@@ -7,6 +7,9 @@ import os
 from datetime import datetime
 import uuid
 import io
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
 from app.models import ProductCreate, ProductUpdate, ProductResponse, MessageResponse, ErrorResponse
 from app.auth import get_current_active_user
@@ -18,8 +21,158 @@ logger = logging.getLogger(__name__)
 # Crear router
 router = APIRouter()
 
-# Diccionario para almacenar progreso de uploads
+# Diccionario para almacenar progreso de uploads (thread-safe)
 upload_progress: Dict[str, dict] = {}
+progress_lock = threading.Lock()
+
+# Executor para procesamiento concurrente
+executor = ThreadPoolExecutor(max_workers=3)  # Máximo 3 archivos simultáneos
+
+
+# ============================================
+# FUNCIONES AUXILIARES PARA CONCURRENCIA
+# ============================================
+
+def update_progress(upload_id: str, **kwargs):
+    """Actualiza el progreso de forma thread-safe."""
+    with progress_lock:
+        if upload_id in upload_progress:
+            upload_progress[upload_id].update(kwargs)
+
+
+def process_excel_row(row: pd.Series, index: int, upload_id: str, total_rows: int) -> dict:
+    """
+    Procesa una fila del Excel de forma aislada.
+    Retorna: {"success": bool, "error": str|None, "product_name": str}
+    """
+    try:
+        # Actualizar progreso
+        progress_percent = int(((index + 1) / total_rows) * 100)
+        update_progress(
+            upload_id,
+            procesados=index + 1,
+            progress=progress_percent,
+            message=f"Procesando producto {index + 1} de {total_rows}"
+        )
+        
+        # Extraer datos
+        nombre = str(row['Nombre']).strip() if pd.notna(row['Nombre']) else None
+        sku = str(row['SKU']).strip() if 'SKU' in row and pd.notna(row['SKU']) else None
+        precio = float(row['Precio']) if pd.notna(row['Precio']) else None
+        stock = int(row['Stock']) if pd.notna(row['Stock']) else 0
+        min_stock = int(row['Min_Stock']) if 'Min_Stock' in row and pd.notna(row['Min_Stock']) else 5
+        categoria_id = int(row['Categoría']) if 'Categoría' in row and pd.notna(row['Categoría']) else None
+        descripcion = str(row['Descripción']).strip() if 'Descripción' in row and pd.notna(row['Descripción']) else None
+        
+        # Validaciones
+        if not nombre:
+            return {"success": False, "error": f"Fila {index + 2}: Nombre vacío", "product_name": ""}
+        
+        if not precio or precio <= 0:
+            return {"success": False, "error": f"Fila {index + 2}: Precio inválido ({precio})", "product_name": nombre}
+        
+        if stock < 0:
+            return {"success": False, "error": f"Fila {index + 2}: Stock negativo ({stock})", "product_name": nombre}
+        
+        # Verificar SKU duplicado
+        if sku:
+            check_sku_query = "SELECT id FROM products WHERE sku = %s"
+            existing = execute_query(check_sku_query, (sku,), fetch=True)
+            
+            if existing:
+                return {"success": False, "error": f"SKU duplicado: {sku}", "product_name": nombre, "duplicate": True}
+        
+        # Insertar producto
+        insert_query = """
+            INSERT INTO products 
+            (name, description, sku, price, stock, min_stock, category_id, is_active)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        
+        result = execute_query(
+            insert_query,
+            (nombre, descripcion, sku, precio, stock, min_stock, categoria_id, True),
+            fetch=False
+        )
+        
+        if result > 0:
+            logger.debug(f"✓ Producto insertado: {nombre}")
+            return {"success": True, "error": None, "product_name": nombre}
+        else:
+            return {"success": False, "error": f"Fila {index + 2}: Error al insertar '{nombre}'", "product_name": nombre}
+    
+    except Exception as e:
+        logger.error(f"Error procesando fila {index + 2}: {e}")
+        return {"success": False, "error": f"Fila {index + 2}: {str(e)}", "product_name": ""}
+
+
+def process_excel_file_sync(file_path: str, upload_id: str, username: str):
+    """
+    Procesa el archivo Excel de forma síncrona en background.
+    Esta función se ejecuta en un thread separado.
+    """
+    try:
+        logger.info(f"[{upload_id}] Iniciando procesamiento en background para {username}")
+        
+        # Leer Excel
+        df = pd.read_excel(file_path)
+        total_rows = len(df)
+        
+        update_progress(
+            upload_id,
+            total=total_rows,
+            status="procesando",
+            message=f"Procesando {total_rows} productos..."
+        )
+        
+        exitosos = 0
+        errores = 0
+        duplicados = 0
+        error_details = []
+        
+        # Procesar cada fila
+        for index, row in df.iterrows():
+            result = process_excel_row(row, index, upload_id, total_rows)
+            
+            if result["success"]:
+                exitosos += 1
+            elif result.get("duplicate"):
+                duplicados += 1
+            else:
+                errores += 1
+                if len(error_details) < 10:  # Limitar a 10 errores
+                    error_details.append(result["error"])
+        
+        # Actualizar progreso final
+        update_progress(
+            upload_id,
+            status="completado",
+            progress=100,
+            exitosos=exitosos,
+            errores=errores,
+            duplicados=duplicados,
+            detalles_errores=error_details,
+            message="Procesamiento completado"
+        )
+        
+        logger.info(f"[{upload_id}] ✓ Completado: {exitosos} exitosos, {errores} errores, {duplicados} duplicados")
+        
+    except Exception as e:
+        logger.error(f"[{upload_id}] Error en procesamiento background: {e}")
+        update_progress(
+            upload_id,
+            status="error",
+            message=f"Error: {str(e)}"
+        )
+    
+    finally:
+        # Limpiar archivo temporal
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                logger.debug(f"[{upload_id}] Archivo temporal eliminado")
+        except Exception as e:
+            logger.warning(f"[{upload_id}] No se pudo eliminar archivo temporal: {e}")
 
 
 # ============================================
@@ -31,11 +184,7 @@ upload_progress: Dict[str, dict] = {}
     response_model=List[ProductResponse],
     status_code=status.HTTP_200_OK,
     summary="Listar productos",
-    description="Obtiene lista de todos los productos con filtros opcionales",
-    responses={
-        200: {"description": "Lista de productos"},
-        500: {"model": ErrorResponse, "description": "Error del servidor"}
-    }
+    description="Obtiene lista de todos los productos con filtros opcionales"
 )
 async def get_products(
     skip: int = Query(0, ge=0, description="Número de registros a saltar"),
@@ -76,6 +225,74 @@ async def get_products(
 
 
 # ============================================
+# ENDPOINT: ELIMINAR TODOS LOS PRODUCTOS
+# ============================================
+
+@router.delete(
+    "/delete-all",
+    response_model=MessageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Eliminar todos los productos",
+    description="Elimina TODOS los productos del inventario (requiere confirmación)"
+)
+async def delete_all_products(
+    confirm: bool = Query(False, description="Debe ser True para confirmar"),
+    current_user: dict = Depends(get_current_active_user)
+):
+    """
+    Elimina TODOS los productos del inventario.
+    Requiere confirmación explícita con confirm=true.
+    """
+    try:
+        if not confirm:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Debes confirmar la eliminación masiva con confirm=true"
+            )
+        
+        logger.warning(f"⚠️ Usuario {current_user['username']} solicitó ELIMINAR TODOS los productos")
+        
+        # Contar productos antes de eliminar
+        count_query = "SELECT COUNT(*) as total FROM products"
+        result = execute_query(count_query, fetch=True)
+        total_products = result[0]['total']
+        
+        if total_products == 0:
+            return {
+                "message": "No hay productos para eliminar",
+                "detail": "El inventario ya está vacío"
+            }
+        
+        # Eliminar todos
+        delete_query = "DELETE FROM products"
+        execute_query(delete_query, fetch=False)
+        
+        logger.warning(f"🗑️ {total_products} productos eliminados por {current_user['username']}")
+        
+        return {
+            "message": f"✅ {total_products} productos eliminados exitosamente",
+            "detail": f"Se eliminaron todos los productos del inventario"
+        }
+        
+    except HTTPException:
+        raise
+    
+    except Exception as e:
+        logger.error(f"Error al eliminar todos los productos: {e}")
+        
+        if "foreign key constraint" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se pueden eliminar productos con ventas asociadas. Elimina primero las ventas."
+            )
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al eliminar productos"
+        )
+        
+
+# ============================================
 # ENDPOINT: OBTENER PRODUCTO POR ID
 # ============================================
 
@@ -83,8 +300,7 @@ async def get_products(
     "/{product_id}",
     response_model=ProductResponse,
     status_code=status.HTTP_200_OK,
-    summary="Obtener producto",
-    description="Obtiene un producto específico por su ID"
+    summary="Obtener producto"
 )
 async def get_product(
     product_id: int,
@@ -92,24 +308,19 @@ async def get_product(
 ):
     """Obtiene un producto por su ID."""
     try:
-        logger.info(f"Buscando producto ID: {product_id}")
-        
         query = "SELECT * FROM products WHERE id = %s"
         result = execute_query(query, (product_id,), fetch=True)
         
         if not result:
-            logger.warning(f"Producto no encontrado: {product_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Producto con ID {product_id} no encontrado"
             )
         
-        logger.info(f"✓ Producto encontrado: {result[0]['name']}")
         return result[0]
         
     except HTTPException:
         raise
-    
     except Exception as e:
         logger.error(f"Error al obtener producto: {e}")
         raise HTTPException(
@@ -126,8 +337,7 @@ async def get_product(
     "/",
     response_model=ProductResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Crear producto",
-    description="Crea un nuevo producto en el inventario"
+    summary="Crear producto"
 )
 async def create_product(
     product: ProductCreate,
@@ -135,14 +345,11 @@ async def create_product(
 ):
     """Crea un nuevo producto en el inventario."""
     try:
-        logger.info(f"Usuario {current_user['username']} creando producto: {product.name}")
-        
         if product.sku:
             check_sku_query = "SELECT id FROM products WHERE sku = %s"
             existing_sku = execute_query(check_sku_query, (product.sku,), fetch=True)
             
             if existing_sku:
-                logger.warning(f"Intento de crear producto con SKU duplicado: {product.sku}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Ya existe un producto con SKU '{product.sku}'"
@@ -170,34 +377,28 @@ async def create_product(
         )
         
         if result <= 0:
-            logger.error("Error al insertar producto")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Error al crear producto"
             )
         
-# Obtener el ID insertado y el producto
-        get_product_query = """
-            SELECT * FROM products 
-            ORDER BY id DESC LIMIT 1
-        """
+        # Obtener el producto recién creado
+        get_product_query = "SELECT * FROM products ORDER BY id DESC LIMIT 1"
         created_product = execute_query(get_product_query, fetch=True)
         
         if not created_product or len(created_product) == 0:
-            logger.error("No se pudo recuperar el producto después de crearlo")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Producto creado pero no se pudo recuperar"
             )
         
-        logger.info(f"✓ Producto creado exitosamente: ID {created_product[0]['id']}")
+        logger.info(f"✓ Producto creado: {created_product[0]['name']}")
         return created_product[0]
         
     except HTTPException:
         raise
-    
     except Exception as e:
-        logger.error(f"Error inesperado al crear producto: {e}")
+        logger.error(f"Error al crear producto: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno al crear producto"
@@ -212,8 +413,7 @@ async def create_product(
     "/{product_id}",
     response_model=ProductResponse,
     status_code=status.HTTP_200_OK,
-    summary="Actualizar producto",
-    description="Actualiza un producto existente"
+    summary="Actualizar producto"
 )
 async def update_product(
     product_id: int,
@@ -222,13 +422,10 @@ async def update_product(
 ):
     """Actualiza un producto existente."""
     try:
-        logger.info(f"Usuario {current_user['username']} actualizando producto ID: {product_id}")
-        
         check_query = "SELECT id FROM products WHERE id = %s"
         exists = execute_query(check_query, (product_id,), fetch=True)
         
         if not exists:
-            logger.warning(f"Intento de actualizar producto inexistente: {product_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Producto con ID {product_id} no encontrado"
@@ -277,7 +474,6 @@ async def update_product(
             params.append(product.is_active)
         
         if not update_fields:
-            logger.warning("Intento de actualización sin campos")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No se proporcionaron campos para actualizar"
@@ -286,26 +482,17 @@ async def update_product(
         update_query = f"UPDATE products SET {', '.join(update_fields)} WHERE id = %s"
         params.append(product_id)
         
-        result = execute_query(update_query, tuple(params), fetch=False)
-        
-        if result <= 0:
-            logger.error("Error al actualizar producto")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error al actualizar producto"
-            )
+        execute_query(update_query, tuple(params), fetch=False)
         
         get_query = "SELECT * FROM products WHERE id = %s"
         updated_product = execute_query(get_query, (product_id,), fetch=True)
         
-        logger.info(f"✓ Producto actualizado exitosamente: ID {product_id}")
         return updated_product[0]
         
     except HTTPException:
         raise
-    
     except Exception as e:
-        logger.error(f"Error inesperado al actualizar producto: {e}")
+        logger.error(f"Error al actualizar producto: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno al actualizar producto"
@@ -320,8 +507,7 @@ async def update_product(
     "/{product_id}",
     response_model=MessageResponse,
     status_code=status.HTTP_200_OK,
-    summary="Eliminar producto",
-    description="Elimina un producto del inventario"
+    summary="Eliminar producto"
 )
 async def delete_product(
     product_id: int,
@@ -329,13 +515,10 @@ async def delete_product(
 ):
     """Elimina un producto del inventario."""
     try:
-        logger.info(f"Usuario {current_user['username']} eliminando producto ID: {product_id}")
-        
         check_query = "SELECT name FROM products WHERE id = %s"
         exists = execute_query(check_query, (product_id,), fetch=True)
         
         if not exists:
-            logger.warning(f"Intento de eliminar producto inexistente: {product_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Producto con ID {product_id} no encontrado"
@@ -344,26 +527,17 @@ async def delete_product(
         product_name = exists[0]['name']
         
         delete_query = "DELETE FROM products WHERE id = %s"
-        result = execute_query(delete_query, (product_id,), fetch=False)
+        execute_query(delete_query, (product_id,), fetch=False)
         
-        if result <= 0:
-            logger.error(f"Error al eliminar producto: {product_id}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error al eliminar producto"
-            )
-        
-        logger.info(f"✓ Producto eliminado: {product_name}")
         return {
             "message": "Producto eliminado exitosamente",
-            "detail": f"El producto '{product_name}' ha sido eliminado del inventario"
+            "detail": f"El producto '{product_name}' ha sido eliminado"
         }
         
     except HTTPException:
         raise
-    
     except Exception as e:
-        logger.error(f"Error inesperado al eliminar producto: {e}")
+        logger.error(f"Error al eliminar producto: {e}")
         
         if "foreign key constraint" in str(e).lower():
             raise HTTPException(
@@ -373,7 +547,7 @@ async def delete_product(
         
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error interno al eliminar producto"
+            detail="Error al eliminar producto"
         )
 
 
@@ -385,16 +559,13 @@ async def delete_product(
     "/alerts/low-stock",
     response_model=List[ProductResponse],
     status_code=status.HTTP_200_OK,
-    summary="Productos con stock bajo",
-    description="Lista productos cuyo stock está por debajo del mínimo"
+    summary="Productos con stock bajo"
 )
 async def get_low_stock_products(
     current_user: dict = Depends(get_current_active_user)
 ):
     """Lista productos con stock bajo."""
     try:
-        logger.info(f"Consultando productos con stock bajo")
-        
         query = """
             SELECT * FROM products 
             WHERE stock <= min_stock AND is_active = TRUE
@@ -402,8 +573,6 @@ async def get_low_stock_products(
         """
         
         products = execute_query(query, fetch=True)
-        
-        logger.info(f"✓ {len(products)} productos con stock bajo")
         return products
         
     except Exception as e:
@@ -415,194 +584,122 @@ async def get_low_stock_products(
 
 
 # ============================================
-# ENDPOINT: CARGAR PRODUCTOS DESDE EXCEL
+# ENDPOINT: CARGAR PRODUCTOS DESDE EXCEL (MEJORADO CON CONCURRENCIA)
 # ============================================
 
 @router.post(
     "/upload/excel",
-    status_code=status.HTTP_200_OK,
-    summary="Cargar productos desde Excel",
-    description="Carga masiva de productos desde archivo Excel (.xlsx, .xls)",
-    responses={
-        200: {"description": "Archivo procesado"},
-        400: {"model": ErrorResponse, "description": "Archivo inválido"},
-        500: {"model": ErrorResponse, "description": "Error del servidor"}
-    }
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Cargar productos desde Excel (Async)",
+    description="Carga masiva ASÍNCRONA de productos con procesamiento en background"
 )
-async def upload_excel(
+async def upload_excel_async(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_active_user)
 ):
     """
-    Carga productos masivamente desde archivo Excel.
-    
-    Formato esperado del Excel:
-        | Nombre | SKU | Precio | Stock | Min_Stock | Categoría | Descripción |
-    
-    Retorna:
-        dict: Resultado del procesamiento con estadísticas
+    Carga productos masivamente de forma ASÍNCRONA.
+    El archivo se procesa en background y puedes consultar el progreso.
     """
     
     upload_id = str(uuid.uuid4())
     
-    upload_progress[upload_id] = {
-        "status": "iniciando",
-        "progress": 0,
-        "total": 0,
-        "procesados": 0,
-        "exitosos": 0,
-        "errores": 0,
-        "duplicados": 0,
-        "message": "Iniciando carga..."
-    }
+    # Inicializar progreso
+    with progress_lock:
+        upload_progress[upload_id] = {
+            "upload_id": upload_id,
+            "status": "iniciando",
+            "progress": 0,
+            "total": 0,
+            "procesados": 0,
+            "exitosos": 0,
+            "errores": 0,
+            "duplicados": 0,
+            "detalles_errores": [],
+            "message": "Iniciando carga...",
+            "started_at": datetime.now().isoformat(),
+            "username": current_user['username']
+        }
     
     try:
-        logger.info(f"Usuario {current_user['username']} iniciando carga de Excel")
+        logger.info(f"[{upload_id}] Usuario {current_user['username']} iniciando carga async")
         
+        # Validar formato
         if not file.filename.endswith(('.xlsx', '.xls')):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="El archivo debe ser formato Excel (.xlsx o .xls)"
             )
         
+        # Guardar archivo temporal
         upload_dir = "/tmp/uploads"
         os.makedirs(upload_dir, exist_ok=True)
         
         file_path = f"{upload_dir}/{upload_id}_{file.filename}"
         
+        # Guardar archivo
         with open(file_path, "wb") as buffer:
             content = await file.read()
             buffer.write(content)
         
-        logger.info(f"Archivo guardado: {file_path}")
+        logger.info(f"[{upload_id}] Archivo guardado: {file_path}")
         
+        # Validar Excel rápidamente
         try:
             df = pd.read_excel(file_path)
-            logger.info(f"Excel leído: {len(df)} filas encontradas")
-        except Exception as e:
-            logger.error(f"Error al leer Excel: {e}")
-            os.remove(file_path)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Error al leer archivo Excel: {str(e)}"
-            )
-        
-        required_columns = ['Nombre', 'Precio', 'Stock']
-        missing_columns = [col for col in required_columns if col not in df.columns]
-        
-        if missing_columns:
-            os.remove(file_path)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Columnas faltantes en el Excel: {', '.join(missing_columns)}. "
-                       f"Columnas requeridas: {', '.join(required_columns)}"
-            )
-        
-        total_rows = len(df)
-        upload_progress[upload_id]["total"] = total_rows
-        upload_progress[upload_id]["status"] = "procesando"
-        
-        exitosos = 0
-        errores = 0
-        duplicados = 0
-        error_details = []
-        
-        for index, row in df.iterrows():
-            try:
-                upload_progress[upload_id]["procesados"] = index + 1
-                upload_progress[upload_id]["progress"] = int(((index + 1) / total_rows) * 100)
-                upload_progress[upload_id]["message"] = f"Procesando producto {index + 1} de {total_rows}"
-                
-                nombre = str(row['Nombre']).strip() if pd.notna(row['Nombre']) else None
-                sku = str(row['SKU']).strip() if 'SKU' in row and pd.notna(row['SKU']) else None
-                precio = float(row['Precio']) if pd.notna(row['Precio']) else None
-                stock = int(row['Stock']) if pd.notna(row['Stock']) else 0
-                min_stock = int(row['Min_Stock']) if 'Min_Stock' in row and pd.notna(row['Min_Stock']) else 5
-                categoria_id = int(row['Categoría']) if 'Categoría' in row and pd.notna(row['Categoría']) else None
-                descripcion = str(row['Descripción']).strip() if 'Descripción' in row and pd.notna(row['Descripción']) else None
-                
-                if not nombre:
-                    errores += 1
-                    error_details.append(f"Fila {index + 2}: Nombre vacío")
-                    continue
-                
-                if not precio or precio <= 0:
-                    errores += 1
-                    error_details.append(f"Fila {index + 2}: Precio inválido ({precio})")
-                    continue
-                
-                if stock < 0:
-                    errores += 1
-                    error_details.append(f"Fila {index + 2}: Stock negativo ({stock})")
-                    continue
-                
-                if sku:
-                    check_sku_query = "SELECT id FROM products WHERE sku = %s"
-                    existing = execute_query(check_sku_query, (sku,), fetch=True)
-                    
-                    if existing:
-                        duplicados += 1
-                        logger.warning(f"SKU duplicado: {sku}")
-                        continue
-                
-                insert_query = """
-                    INSERT INTO products 
-                    (name, description, sku, price, stock, min_stock, category_id, is_active)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                
-                result = execute_query(
-                    insert_query,
-                    (nombre, descripcion, sku, precio, stock, min_stock, categoria_id, True),
-                    fetch=False
+            required_columns = ['Nombre', 'Precio', 'Stock']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            
+            if missing_columns:
+                os.remove(file_path)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Columnas faltantes: {', '.join(missing_columns)}"
                 )
-                
-                if result > 0:
-                    exitosos += 1
-                    logger.debug(f"Producto insertado: {nombre}")
-                else:
-                    errores += 1
-                    error_details.append(f"Fila {index + 2}: Error al insertar '{nombre}'")
-                
-            except Exception as e:
-                errores += 1
-                error_details.append(f"Fila {index + 2}: {str(e)}")
-                logger.error(f"Error procesando fila {index + 2}: {e}")
+            
+            logger.info(f"[{upload_id}] Excel validado: {len(df)} filas")
+            
+        except Exception as e:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Error al leer Excel: {str(e)}"
+            )
         
-        try:
-            os.remove(file_path)
-        except:
-            pass
+        # Procesar en background usando ThreadPoolExecutor
+        loop = asyncio.get_event_loop()
+        loop.run_in_executor(
+            executor,
+            process_excel_file_sync,
+            file_path,
+            upload_id,
+            current_user['username']
+        )
         
-        upload_progress[upload_id]["status"] = "completado"
-        upload_progress[upload_id]["progress"] = 100
-        upload_progress[upload_id]["exitosos"] = exitosos
-        upload_progress[upload_id]["errores"] = errores
-        upload_progress[upload_id]["duplicados"] = duplicados
-        upload_progress[upload_id]["message"] = "Procesamiento completado"
+        logger.info(f"[{upload_id}] Procesamiento iniciado en background")
         
-        response = {
+        # Retornar inmediatamente con el upload_id
+        return {
             "upload_id": upload_id,
-            "total_procesados": total_rows,
-            "exitosos": exitosos,
-            "errores": errores,
-            "duplicados": duplicados,
-            "detalles_errores": error_details[:10] if error_details else []
+            "message": "Archivo recibido. Procesando en segundo plano...",
+            "status": "processing",
+            "check_progress_url": f"/api/products/upload/progress/{upload_id}"
         }
         
-        logger.info(f"✓ Carga completada: {exitosos} exitosos, {errores} errores, {duplicados} duplicados")
-        
-        return response
-        
     except HTTPException:
-        upload_progress[upload_id]["status"] = "error"
+        with progress_lock:
+            if upload_id in upload_progress:
+                upload_progress[upload_id]["status"] = "error"
         raise
     
     except Exception as e:
-        logger.error(f"Error inesperado en carga de Excel: {e}")
-        upload_progress[upload_id]["status"] = "error"
-        upload_progress[upload_id]["message"] = str(e)
+        logger.error(f"[{upload_id}] Error: {e}")
+        with progress_lock:
+            if upload_id in upload_progress:
+                upload_progress[upload_id]["status"] = "error"
+                upload_progress[upload_id]["message"] = str(e)
         
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -626,13 +723,36 @@ async def get_upload_progress(
 ):
     """Obtiene el progreso actual de una carga de Excel."""
     
-    if upload_id not in upload_progress:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Upload no encontrado o expirado"
-        )
+    with progress_lock:
+        if upload_id not in upload_progress:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Upload no encontrado o expirado"
+            )
+        
+        return upload_progress[upload_id].copy()
+
+
+# ============================================
+# ENDPOINT: LISTAR TODOS LOS UPLOADS ACTIVOS
+# ============================================
+
+@router.get(
+    "/upload/list",
+    status_code=status.HTTP_200_OK,
+    summary="Listar uploads activos",
+    description="Lista todos los uploads en progreso o completados recientemente"
+)
+async def list_uploads(
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Lista todos los uploads activos."""
     
-    return upload_progress[upload_id]
+    with progress_lock:
+        return {
+            "uploads": list(upload_progress.values()),
+            "total": len(upload_progress)
+        }
 
 
 # ============================================
@@ -642,8 +762,7 @@ async def get_upload_progress(
 @router.get(
     "/download/template",
     status_code=status.HTTP_200_OK,
-    summary="Descargar plantilla Excel",
-    description="Descarga una plantilla de Excel de ejemplo para carga masiva"
+    summary="Descargar plantilla Excel"
 )
 async def download_excel_template(
     current_user: dict = Depends(get_current_active_user)
@@ -687,7 +806,7 @@ async def download_excel_template(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error al generar plantilla"
         )
-        
+
 
 # ============================================
 # ENDPOINT: REINICIAR SECUENCIA DE IDs
@@ -697,29 +816,26 @@ async def download_excel_template(
     "/reset-sequence",
     response_model=MessageResponse,
     status_code=status.HTTP_200_OK,
-    summary="Reiniciar secuencia de IDs",
-    description="Reinicia el AUTO_INCREMENT de productos a 1 (solo si no hay productos)"
+    summary="Reiniciar secuencia de IDs"
 )
 async def reset_product_sequence(
     current_user: dict = Depends(get_current_active_user)
 ):
     """Reinicia la secuencia de IDs de productos."""
     try:
-        # Verificar que no haya productos
         check_query = "SELECT COUNT(*) as total FROM products"
         result = execute_query(check_query, fetch=True)
         
         if result[0]['total'] > 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No se puede reiniciar la secuencia mientras existan productos"
+                detail="No se puede reiniciar la secuencia mientras existan productos. Elimina todos los productos primero."
             )
         
-        # Reiniciar AUTO_INCREMENT
         reset_query = "ALTER TABLE products AUTO_INCREMENT = 1"
         execute_query(reset_query, fetch=False)
         
-        logger.info(f"✓ Secuencia de productos reiniciada por {current_user['username']}")
+        logger.info(f"✓ Secuencia reiniciada por {current_user['username']}")
         
         return {
             "message": "Secuencia reiniciada exitosamente",
@@ -728,10 +844,11 @@ async def reset_product_sequence(
         
     except HTTPException:
         raise
-    
     except Exception as e:
         logger.error(f"Error al reiniciar secuencia: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error al reiniciar secuencia"
         )
+
+
